@@ -41,8 +41,30 @@ Les joueurs peuvent activer l'auto-spin pour 10, 50 ou 100 spins consécutifs. L
 **Système audio :**
 Howler.js gère tous les sons du jeu avec un système de pooling pour éviter les latences. Chaque action a son son distinctif : le démarrage du spin produit un roulement de tambour crescendo, chaque rouleau qui s'arrête fait un "clunk" métallique satisfaisant, les gains de coins produisent des "bling" cristallins, et les gros gains déclenchent une fanfare épique. Les sons peuvent être ajustés en volume ou désactivés dans les settings, et le système supporte les effets de vibration haptique sur mobile pour renforcer le feedback.
 
+### Système d'authentification
+
+**Stratégie multi-méthodes :**
+L'authentification utilise Supabase Auth qui supporte nativement plusieurs méthodes de connexion. Le jeu propose trois options principales : inscription par email/mot de passe (méthode classique avec confirmation par email), connexion OAuth sociale via Google et Apple (obligatoire pour iOS), et un mode invité (guest account) qui permet de jouer immédiatement sans inscription. Le mode invité crée un compte anonyme Supabase lié au device, et le joueur peut convertir son compte invité en compte permanent à tout moment sans perdre sa progression.
+
+**Flux d'authentification :**
+À la première ouverture, le joueur voit un écran d'accueil avec trois boutons : "Jouer en tant qu'invité" (bouton principal, le plus visible pour réduire la friction), "Se connecter avec Google/Apple" (boutons OAuth), et "Créer un compte" (email/password). Le mode invité est poussé en premier car chaque étape supplémentaire dans le funnel d'inscription réduit le taux de conversion de 20-30%. Une fois engagé dans le jeu, des prompts non-intrusifs encouragent la conversion du compte invité vers un compte permanent ("Sauvegardez votre progression ! Créez un compte en 10 secondes").
+
+**Sécurité de l'authentification :**
+Les mots de passe sont hashés côté serveur par Supabase (bcrypt). Les tokens JWT ont une durée de vie de 1 heure avec refresh token automatique. Le rate limiting est appliqué sur les tentatives de connexion (5 tentatives max par 15 minutes par IP). La récupération de mot de passe passe par un lien magique envoyé par email. Les sessions sont invalidées côté serveur en cas de changement de mot de passe. Toutes les communications passent par HTTPS.
+
+### Profil joueur
+
+**Structure du profil :**
+Chaque joueur possède un profil visible par les autres joueurs. Le profil affiche l'avatar (choisi parmi 50+ options de base, avec des avatars premium débloquables), le pseudonyme (unique, modifiable 1 fois par mois pour 50 gems), le niveau, le tier de ligue actuel, le nombre de districts complétés, la guilde, et le titre actif (obtenu via achievements). Les statistiques détaillées incluent : total de spins, taux de victoire, coins gagnés totaux, nombre d'attaques réussies, nombre de raids, plus gros gain en un spin, et durée de jeu totale.
+
+**Historique d'activité :**
+Le profil inclut un historique des 50 dernières actions significatives : districts complétés, attaques données/reçues, sets de cartes complétés, achievements débloqués, et montées de ligue. Cet historique est visible publiquement et crée un "feed" d'activité qui humanise le joueur et donne du contexte lors des interactions PvP ("Ce joueur vient de compléter un district, il a probablement beaucoup de coins").
+
+**Page de settings :**
+Les paramètres du joueur incluent : gestion du compte (email, mot de passe, suppression de compte), préférences audio (volume musique, volume effets, vibrations on/off), préférences de notification (granulaires par type), langue du jeu, et informations légales (CGU, politique de confidentialité, mentions légales). Un bouton de contact support est toujours accessible depuis les settings.
+
 ### Livrables Phase 1-2
-À la fin de cette phase, le jeu dispose d'un slot machine entièrement fonctionnel et jouable, avec un design system complet, une architecture évolutive, et tous les composants UI de base. Les joueurs peuvent créer un compte, recevoir des spins gratuits, et jouer au slot avec des animations fluides et un feedback audio satisfaisant.
+À la fin de cette phase, le jeu dispose d'un slot machine entièrement fonctionnel et jouable, avec un design system complet, une architecture évolutive, et tous les composants UI de base. Les joueurs peuvent créer un compte (email, OAuth, ou invité), personnaliser leur profil, recevoir des spins gratuits, et jouer au slot avec des animations fluides et un feedback audio satisfaisant.
 
 ---
 
@@ -75,8 +97,19 @@ Compléter tous les bâtiments d'un district au niveau maximum déclenche une ci
 **Persistence et synchronisation :**
 Tous les états de construction sont sauvegardés en temps réel dans Supabase. Chaque upgrade déclenche immédiatement une sauvegarde, et le système gère les conflits en cas de connexion instable. Si un joueur ferme l'application pendant une animation de construction, celle-ci sera complétée côté serveur et le bâtiment apparaîtra upgraded à la prochaine ouverture. Cette robustesse est critique pour maintenir la confiance des joueurs qui investissent des ressources précieuses.
 
+### Système d'inventaire
+
+**Structure de l'inventaire :**
+L'inventaire du joueur centralise tous les items consommables et bonus du jeu. Les items principaux sont : les shields (protection contre les attaques, stockables jusqu'à 10 max), les boosts temporaires (double coins ×2h, double XP ×1h, spin speed ×30min), les coffres de cartes (petit, moyen, grand, stockables sans limite), et les items d'événements spéciaux (clés, tickets, tokens saisonniers). Chaque item possède un ID unique, une quantité, une date d'obtention, et éventuellement une date d'expiration pour les items temporaires.
+
+**Interface d'inventaire :**
+L'inventaire est accessible depuis le profil du joueur ou via un raccourci dans la navigation. L'interface affiche les items sous forme de grille visuelle avec des icônes claires, la quantité en badge, et un indicateur de rareté (bordure colorée : gris common, bleu rare, violet epic, doré legendary). Taper sur un item ouvre une popup de détail avec la description, l'effet, et un bouton "Utiliser" si applicable. Les items à expiration affichent un timer visible.
+
+**Gestion serveur-side :**
+Toute modification de l'inventaire est validée côté serveur via les Edge Functions Supabase. Le client ne peut jamais ajouter ou modifier directement un item dans la table `player_inventory`. Cela empêche les exploits courants comme la duplication d'items ou l'injection de ressources. Chaque utilisation d'item est loguée dans une table `inventory_log` pour audit et détection d'anomalies.
+
 ### Livrables Phase 3
-À la fin de cette phase, les joueurs peuvent progresser à travers des dizaines de districts uniques, chacun avec son ambiance visuelle et sonore. Le système de construction est smooth, gratifiant, et visuellement impressionnant. La boucle addictive spin-coins-construction est complète et fonctionnelle.
+À la fin de cette phase, les joueurs peuvent progresser à travers des dizaines de districts uniques, chacun avec son ambiance visuelle et sonore. Le système de construction est smooth, gratifiant, et visuellement impressionnant. L'inventaire centralise tous les items du joueur. La boucle addictive spin-coins-construction est complète et fonctionnelle.
 
 ---
 
@@ -125,15 +158,43 @@ Chaque attaque déclenche immédiatement une notification push à la victime. Le
 **Optimisation des notifications :**
 Le système respecte les bonnes pratiques de notifications : pas plus d'une notification d'attaque par 30 minutes (même si plusieurs attaques se produisent), respect des fuseaux horaires (pas de notifications entre 23h et 8h heure locale), et permettre aux joueurs de désactiver certaines notifications tout en gardant les plus importantes activées. Cette modération évite de spam les joueurs et maintient l'efficacité des notifications.
 
+### Système anti-triche
+
+**Principe fondamental : ne jamais faire confiance au client.**
+Toute la logique critique du jeu est exécutée côté serveur via les Edge Functions Supabase. Le client envoie uniquement des intentions ("je veux spinner", "je veux attaquer le joueur X") et le serveur valide, calcule, et retourne le résultat. Le client ne peut jamais injecter un résultat de spin, modifier ses coins, ou forcer une attaque. Ce principe s'applique à toutes les actions qui modifient les ressources ou l'état d'un joueur.
+
+**Validation serveur-side détaillée :**
+Chaque action passe par une chaîne de validation stricte. Pour un spin : le serveur vérifie que le joueur a assez de spins, génère le résultat aléatoire côté serveur (jamais côté client), calcule les récompenses, met à jour la DB en transaction atomique, et retourne le résultat au client. Pour une attaque PvP : le serveur vérifie que la cible est dans le pool valide du joueur, que le joueur a un symbole Attack disponible, que la cible n'est pas protégée par un shield, calcule le butin, effectue le transfert de coins en transaction atomique, et envoie la notification.
+
+**Rate limiting et détection d'anomalies :**
+Un rate limiter est appliqué sur toutes les API critiques : maximum 2 spins par seconde (empêche les speed hacks), maximum 10 attaques par heure, maximum 100 requêtes API par minute globalement. Le système détecte les patterns anormaux : si un joueur gagne des coins à un rythme statistiquement impossible (plus de 3 écarts-types au-dessus de la moyenne), si un joueur effectue des actions plus vite que possible via l'UI normale, ou si les timestamps des requêtes sont incohérents. Les joueurs flaggés sont automatiquement loggés pour review manuelle, et en cas de triche confirmée, le compte est banni avec possibilité d'appel.
+
+**Protection de la mémoire et du réseau :**
+Côté client, les données sensibles (coins, gems, spins) ne sont jamais stockées en variables globales accessibles depuis la console. Les réponses API sont signées avec un hash HMAC qui empêche la modification des payloads en transit. Les WebSockets Supabase Realtime utilisent des channels authentifiés qui rejettent les connexions non autorisées. En production, les outils de développement du navigateur sont détectés (sans bloquer, mais en loggant l'activité suspecte).
+
 ### Livrables Phase 4
-À la fin de cette phase, Kingdom Clash dispose d'un système PvP complet, équilibré, et addictif. Les joueurs peuvent attaquer, raider, se protéger avec des shields, et se venger. Le jeu est transformé en expérience sociale compétitive où chaque session apporte potentiellement des surprises (nouvelles attaques subies, revenges disponibles).
+À la fin de cette phase, Kingdom Clash dispose d'un système PvP complet, équilibré, sécurisé, et addictif. Les joueurs peuvent attaquer, raider, se protéger avec des shields, et se venger. Le système anti-triche garantit l'intégrité des résultats et l'équité entre joueurs. Le jeu est transformé en expérience sociale compétitive où chaque session apporte potentiellement des surprises (nouvelles attaques subies, revenges disponibles).
 
 ---
 
 ## PHASE 5 : SOCIAL & GUILDES (Semaines 12-14)
 
 ### Objectifs
-Développer la couche sociale la plus profonde du jeu. Les guildes transforment Kingdom Clash d'une collection d'interactions 1v1 en une expérience communautaire riche où les joueurs collaborent, compétitionnent en équipes, et forment des liens sociaux durables.
+Développer la couche sociale la plus profonde du jeu. Les guildes transforment Kingdom Clash d'une collection d'interactions 1v1 en une expérience communautaire riche où les joueurs collaborent, compétitionnent en équipes, et forment des liens sociaux durables. Cette phase inclut également le système d'amis, prérequis au trading de cartes.
+
+### Système d'amis
+
+**Ajout d'amis :**
+Les joueurs peuvent ajouter des amis de trois manières : recherche par pseudonyme exact (avec suggestions si le pseudo est proche), envoi d'un lien d'invitation partageable (via SMS, WhatsApp, ou réseaux sociaux), et suggestion automatique de joueurs rencontrés en PvP (les 10 derniers adversaires apparaissent dans une section "Joueurs récents"). Une demande d'ami doit être acceptée par le destinataire avant que la relation ne soit établie. Chaque joueur peut avoir jusqu'à 200 amis.
+
+**Liste d'amis et interactions :**
+La liste d'amis affiche pour chaque ami : son avatar, pseudo, niveau, ligue, statut en ligne (en ligne/hors ligne/dernière connexion), et un indicateur de guilde. Depuis la liste, le joueur peut envoyer un cadeau (spins ou coins), proposer un trade de cartes, visiter le district de l'ami (mode spectateur en lecture seule), ou supprimer l'ami. Un système de "meilleurs amis" met en avant les 5 amis avec qui on interagit le plus (dons, trades), leur donnant un badge spécial et les plaçant en haut de la liste.
+
+**Invitation virale et récompenses de parrainage :**
+Chaque joueur dispose d'un code de parrainage unique et d'un lien d'invitation. Quand un nouveau joueur s'inscrit via ce lien, le parrain reçoit 50 spins et 10 gems, et le filleul reçoit un bonus de démarrage de 100 spins et 50,000 coins. Les récompenses de parrainage sont échelonnées : le premier ami parrainé donne un bonus de base, le 5ème un bonus doublé, le 10ème un coffre de cartes épiques, et le 25ème un avatar exclusif "Social Butterfly". Ce système transforme chaque joueur en ambassadeur du jeu.
+
+**Notifications d'amis :**
+Le système notifie les événements entre amis de manière sélective : quand un ami envoie un cadeau (immédiat), quand un ami complète un district (regroupé quotidiennement), quand un ami se fait attaquer (si l'option est activée, permet de "venger" ses amis - feature optionnelle future). Ces notifications créent un tissu social qui connecte les joueurs même quand ils ne jouent pas activement ensemble.
 
 ### Structure des guildes
 
@@ -182,7 +243,7 @@ Le système trouve des adversaires avec un niveau de guilde similaire et un nomb
 La guilde gagnante reçoit des récompenses significatives distribuées à tous les membres participants : 500 gems, 1 million de coins, des cartes légendaires, et un boost temporaire de production de ressources (24h de double coins/spins). La guilde perdante reçoit des récompenses de consolation (100 gems, 200k coins) pour éviter une frustration totale. Le système encourage fortement la participation en donnant de meilleures récompenses individuelles aux joueurs qui ont utilisé leurs 3 attaques.
 
 ### Livrables Phase 5
-À la fin de cette phase, les guildes sont le cœur social du jeu. Les joueurs interagissent quotidiennement via le chat, s'entraident avec des dons, collaborent pour vaincre des boss, et compétitionnent dans des guerres épiques. Les guildes actives deviennent des communautés soudées où les joueurs se font de vrais amis et restent engagés à long terme.
+À la fin de cette phase, le système social est complet. Les joueurs peuvent ajouter des amis, envoyer des cadeaux, parrainer de nouveaux joueurs, et interagir via le système d'amis. Les guildes sont le cœur social du jeu : les joueurs interagissent quotidiennement via le chat, s'entraident avec des dons, collaborent pour vaincre des boss, et compétitionnent dans des guerres épiques. Les guildes actives deviennent des communautés soudées où les joueurs se font de vrais amis et restent engagés à long terme.
 
 ---
 
@@ -431,6 +492,56 @@ Chaque action a un son distinctif : le spin démarre avec un roulement de tambou
 **Thèmes musicaux :**
 Chaque district possède une musique d'ambiance loopable de 2-3 minutes. Le menu principal a une musique épique et entraînante. Les combats PvP ont une musique tendue et percussive. Les moments de célébration (district complété, set de cartes complété) ont des fanfares triomphales. La musique s'adapte dynamiquement : le volume baisse légèrement pendant les dialogues, elle accélère pendant les moments d'action, et elle fusionne smoothly lors des transitions. Les joueurs peuvent ajuster le volume de la musique et des effets sonores indépendamment.
 
+### Localisation et internationalisation (i18n)
+
+**Architecture multi-langues :**
+Le système i18n utilise la bibliothèque next-intl intégrée à Next.js 14 pour gérer les traductions. Toutes les chaînes de texte de l'interface sont externalisées dans des fichiers JSON par langue, organisés par namespace (common, slot, pvp, guild, shop, notifications). Le système supporte le pluriel, le formatage des nombres selon la locale (1,000 vs 1.000), et le formatage des dates. Le changement de langue est instantané sans rechargement de page grâce au système de bundles dynamiques.
+
+**Langues supportées au lancement :**
+Le soft launch cible les marchés anglophones, donc l'anglais (en) est la langue par défaut. Le français (fr) est la deuxième langue prioritaire (marché francophone). L'espagnol (es), le portugais brésilien (pt-BR), et l'allemand (de) sont ajoutés avant le lancement global. Chaque traduction est réalisée par des traducteurs natifs (pas de traduction automatique) pour garantir la qualité et le ton approprié pour un jeu (informal, dynamique, fun). Les textes du slot machine et des notifications push sont particulièrement soignés car ils impactent directement l'engagement.
+
+**Adaptation culturelle :**
+Au-delà de la traduction pure, certains éléments sont adaptés culturellement : les noms des districts peuvent varier selon la langue, les formats de prix dans la boutique respectent les conventions locales (€, $, R$), les horaires des events sont ajustés par fuseau horaire, et les notifications push respectent les jours fériés locaux. Les images et icônes sont culture-neutral pour éviter les problèmes de localisation visuelle.
+
+### Accessibilité
+
+**Conformité aux standards :**
+Le jeu respecte les guidelines WCAG 2.1 niveau AA pour l'accessibilité web. Le contraste des couleurs entre le texte et l'arrière-plan est au minimum de 4.5:1 pour le texte normal et 3:1 pour le texte large. Tous les éléments interactifs ont une taille minimale de 44x44px pour faciliter le tap sur mobile. Les animations peuvent être réduites ou désactivées via le setting "Reduce Motion" qui respecte aussi la préférence système `prefers-reduced-motion`.
+
+**Support des lecteurs d'écran :**
+Tous les éléments d'interface possèdent des attributs ARIA appropriés. Les images et icônes ont des alt-texts descriptifs. Les résultats de spin sont annoncés vocalement ("Vous avez obtenu : Coins, Attack, Shield. Gain : 500 coins"). Les boutons et liens ont des labels explicites. La navigation est entièrement possible au clavier/switch control. Le focus est géré correctement lors de l'ouverture/fermeture des modales.
+
+**Options d'accessibilité in-game :**
+Les settings du jeu incluent une section Accessibilité avec : taille du texte ajustable (normal, large, extra-large), mode daltonien (les symboles du slot utilisent des formes distinctives en plus des couleurs), réduction des animations (désactive particules, shake, et flashs), mode contraste élevé (bordures plus marquées, backgrounds opaques au lieu du glassmorphism), et vitesse des animations ajustable (lent, normal, rapide). Ces options permettent à un public plus large de profiter du jeu.
+
+### Conformité légale
+
+**RGPD et protection des données (obligatoire pour l'UE) :**
+Le jeu collecte des données personnelles (email, adresse IP, données de jeu, historique d'achats) et doit respecter le RGPD. Au premier lancement, un bandeau de consentement clair est affiché avec deux options : "Accepter" et "Paramétrer mes choix". Les cookies analytiques (PostHog) et publicitaires ne sont activés qu'après consentement explicite. Les joueurs peuvent à tout moment : consulter leurs données personnelles (export JSON), demander la suppression de leur compte (effectuée sous 30 jours), retirer leur consentement pour les analytics, et modifier leurs préférences de communication. Un DPO (Data Protection Officer) ou un responsable désigné gère les demandes RGPD.
+
+**Conditions Générales d'Utilisation (CGU) :**
+Les CGU couvrent : les règles du jeu (ce qui est interdit : triche, multi-comptes, échanges d'argent réel), la politique de monétisation (achats in-app non remboursables sauf obligation légale, description claire de ce que les joueurs achètent), les droits de propriété intellectuelle (tout le contenu du jeu appartient à l'éditeur, les joueurs ont une licence d'utilisation), la limitation de responsabilité, et les conditions de suspension/bannissement de compte. Les CGU sont accessibles depuis les settings et doivent être acceptées à la création du compte.
+
+**Politique de confidentialité :**
+Un document séparé détaille : quelles données sont collectées et pourquoi, comment elles sont stockées (chiffrement at rest dans Supabase, hébergement UE si possible), avec qui elles sont partagées (Stripe pour les paiements, PostHog pour les analytics, OneSignal pour les notifications), combien de temps elles sont conservées, et les droits des utilisateurs. Ce document est rédigé dans un langage accessible (pas uniquement du jargon juridique) et est disponible dans toutes les langues supportées.
+
+**Obligations spécifiques aux achats in-app :**
+Pour la France et l'UE : affichage clair des prix TTC, droit de rétractation de 14 jours pour les achats non consommés, facturation conforme, et mention "Achats intégrés" sur les stores. Pour les mineurs : un avertissement parental est recommandé, les achats au-dessus de 50€ nécessitent une double confirmation, et un plafond de dépense mensuel optionnel peut être activé dans les settings parentaux. Les loot boxes (coffres de cartes) affichent les probabilités de drop conformément aux régulations de l'App Store et du Google Play Store.
+
+**Mentions légales :**
+L'écran "À propos" affiche : le nom légal de l'éditeur, l'adresse du siège, le numéro SIRET (si entreprise française), l'email de contact, le numéro de version du jeu, et les crédits des technologies tierces utilisées (licences open source).
+
+### Infrastructure et opérations
+
+**Stratégie de backup de la base de données :**
+Supabase fournit des backups automatiques quotidiens sur le plan Pro. En complément, un backup programmatique est configuré via un cron job qui exporte un dump PostgreSQL complet toutes les 6 heures vers un bucket S3 séparé (ou Supabase Storage dans un projet dédié). Les backups sont conservés selon une politique de rétention : backups horaires pendant 24h, quotidiens pendant 30 jours, hebdomadaires pendant 6 mois, mensuels pendant 2 ans. Un test de restauration est effectué mensuellement pour vérifier l'intégrité des backups. Un runbook documenté décrit la procédure de restauration complète en cas de catastrophe.
+
+**Versioning et migrations de base de données en production :**
+Les migrations de schéma DB sont gérées via des fichiers SQL versionnés et numérotés séquentiellement dans `supabase/migrations/`. Chaque migration est idempotente (peut être rejouée sans erreur) et inclut un rollback possible. En production, les migrations sont appliquées via la CLI Supabase pendant les fenêtres de maintenance annoncées. Pour les changements non-breaking (ajout de colonne nullable, nouvel index), les migrations sont appliquées sans downtime. Pour les changements breaking (renommage de colonne, suppression de table), une stratégie en trois étapes est utilisée : (1) ajouter la nouvelle structure en parallèle, (2) migrer les données et le code pour utiliser la nouvelle structure, (3) supprimer l'ancienne structure après vérification. Un système de feature flags permet de déployer du code qui supporte l'ancienne et la nouvelle structure simultanément pendant la transition.
+
+**Monitoring et alerting :**
+Sentry capture toutes les erreurs frontend et backend avec le contexte complet (stack trace, device info, user ID, action en cours). Des alertes sont configurées pour : taux d'erreur supérieur à 1% (warning) ou 5% (critique), temps de réponse API supérieur à 500ms (warning) ou 2s (critique), nombre de joueurs actifs en chute de plus de 30% par rapport à la même heure la veille, et échec de paiement Stripe en série. PostHog monitore les métriques business en temps réel avec des dashboards partagés.
+
 ### Testing exhaustif
 
 **Testing fonctionnel :**
@@ -504,12 +615,13 @@ PostHog est utilisé pour tracker toutes les métriques comportementales : évé
 
 ## RÉCAPITULATIF DE LA TIMELINE
 
-Le développement complet de Kingdom Clash s'étale sur 24 semaines, soit approximativement 6 mois jusqu'au soft launch. Les phases s'enchaînent logiquement : les semaines 1-5 établissent les fondations techniques et développent le slot machine, le cœur du gameplay. Les semaines 6-8 ajoutent la progression via la construction urbaine. Les semaines 9-11 introduisent le PvP compétitif. Les semaines 12-14 développent les systèmes sociaux et les guildes. Les semaines 15-16 ajoutent la collection de cartes. Les semaines 17-18 implémentent les ligues et la compétition. La semaine 19 équilibre l'économie et la monétisation. La semaine 20 ajoute les events et mécanismes de rétention. Les semaines 21-24 finalisent le polish, le testing, et préparent le lancement.
+Le développement complet de Kingdom Clash s'étale sur 24 semaines, soit approximativement 6 mois jusqu'au soft launch. Les phases s'enchaînent logiquement : les semaines 1-5 établissent les fondations techniques (authentification multi-méthodes, profil joueur, design system) et développent le slot machine, le cœur du gameplay. Les semaines 6-8 ajoutent la progression via la construction urbaine et le système d'inventaire. Les semaines 9-11 introduisent le PvP compétitif avec un système anti-triche robuste. Les semaines 12-14 développent le système d'amis, les guildes, et toute la couche sociale. Les semaines 15-16 ajoutent la collection de cartes et le trading entre amis. Les semaines 17-18 implémentent les ligues et la compétition. La semaine 19 équilibre l'économie et la monétisation. La semaine 20 ajoute les events et mécanismes de rétention. Les semaines 21-24 finalisent le polish (localisation i18n, accessibilité), la conformité légale (RGPD, CGU, politique de confidentialité), l'infrastructure (backups, monitoring, migrations DB sans downtime), le testing exhaustif, et préparent le lancement.
 
-Cette timeline est ambitieuse mais réalisable pour un développeur solo expérimenté travaillant temps plein. Chaque phase construit sur les précédentes, permettant de tester et d'itérer continuellement. Le résultat final est un jeu complet, polished, et prêt pour le marché, avec toutes les features nécessaires pour compétitionner dans le segment très compétitif du mobile social gaming.
+Cette timeline est ambitieuse mais réalisable pour un développeur solo expérimenté travaillant temps plein. Chaque phase construit sur les précédentes, permettant de tester et d'itérer continuellement. Le résultat final est un jeu complet, polished, accessible, légalement conforme, et prêt pour le marché, avec toutes les features nécessaires pour compétitionner dans le segment très compétitif du mobile social gaming.
 
 ---
 
-**Document créé le :** Février 2026  
-**Version :** 1.0  
+**Document créé le :** Février 2026
+**Version :** 1.1
 **Auteur :** Équipe Kingdom Clash
+**Dernière mise à jour :** Février 2026 - Ajout authentification, profil joueur, système d'amis, inventaire, anti-triche, i18n, accessibilité, conformité légale, backup/recovery, versioning DB
