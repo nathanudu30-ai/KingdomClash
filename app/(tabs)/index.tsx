@@ -7,7 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { Button, Card, CoinDisplay } from '@/components/ui';
 import { SlotMachine } from '@/components/game';
-import { spin, calculateReward } from '@/lib/game-logic';
+import { spin, calculateReward, BET_OPTIONS } from '@/lib/game-logic';
 import { useAuth } from '@/lib/auth';
 import { getPlayerLevel } from '@/types/game';
 import type { SlotResult } from '@/types/game';
@@ -142,7 +142,7 @@ export default function PlayScreen() {
         <View style={styles.betSelector}>
           <Text style={styles.betLabel}>Mise</Text>
           <View style={styles.betOptions}>
-            {[1, 2, 5].map((multiplier) => {
+            {BET_OPTIONS.map((multiplier) => {
               const isSelected = betMultiplier === multiplier;
               return (
                 <Button

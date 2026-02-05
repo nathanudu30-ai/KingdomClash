@@ -81,19 +81,23 @@ export function spin(): SlotResult {
 }
 
 // Calculate rewards based on spin result
+export const BET_OPTIONS = [1, 2, 5] as const;
+
+type BetAmount = (typeof BET_OPTIONS)[number];
+
 type BetBonus = {
   extraSpins: number;
   rewardBoost: number;
 };
 
-const BET_BONUSES: Record<number, BetBonus> = {
+const BET_BONUSES: Record<BetAmount, BetBonus> = {
   1: { extraSpins: 0, rewardBoost: 0 },
   2: { extraSpins: 3, rewardBoost: 0.2 },
   5: { extraSpins: 10, rewardBoost: 0.33 },
 };
 
 function getBetBonus(betAmount: number): BetBonus {
-  return BET_BONUSES[betAmount] ?? BET_BONUSES[1];
+  return BET_BONUSES[betAmount as BetAmount] ?? BET_BONUSES[1];
 }
 
 export function calculateReward(
