@@ -48,10 +48,16 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="social"
+        options={{
+          title: 'Social',
+          tabBarIcon: ({ focused }) => <TabIcon emoji="👥" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="cards"
         options={{
-          title: 'Cartes',
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🃏" focused={focused} />,
+          href: null, // Hidden from tab bar, accessible via profile
         }}
       />
       <Tabs.Screen
