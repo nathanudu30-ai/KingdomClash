@@ -638,6 +638,74 @@ Une roadmap des 3-6 prochains mois est partagée publiquement pour exciter les j
 
 ---
 
+## PHASE 11 : EXPANSION & MID-CORE (Mois 7-9)
+
+### Objectifs
+Après le lancement global, l’objectif est d’augmenter la profondeur de jeu (mid-core) et d’élargir la variété de contenu pour maximiser la rétention D30+ et l’ARPPU. Cette phase ajoute des systèmes “long-term goals” : progression horizontale, collection, et objectifs de maîtrise.
+
+### Campagne PvE scénarisée
+
+**Chapitrage et progression :**
+Une campagne PvE par chapitres est introduite (10-12 chapitres au lancement, 3-4 ajouts par trimestre). Chaque chapitre propose 8-10 missions courtes (3-5 minutes) avec objectifs variés : gagner X coins en Y spins, réussir 2 raids parfaits, défendre 3 attaques sans perdre de coins, etc. Les chapitres sont lockés par niveau/districts complétés pour garantir une montée en difficulté progressive.
+
+**Narration légère :**
+Chaque chapitre est introduit par une courte cinématique illustrée (type comic panel) et une voix off optionnelle. L’objectif est de donner une motivation narrative sans alourdir le pacing. Les personnages récurrents (chef de guilde, rival, mentor) deviennent des repères émotionnels qui renforcent l’attachement au jeu.
+
+### Système de compagnons (Pets)
+
+**Compétences passives :**
+Les pets offrent des bonus passifs (ex : +2% coins gagnés, +5% chance d’Attack, -10% coût d’upgrade). Les bonus sont faibles individuellement, mais cumulés et optimisés par les joueurs avancés. Chaque pet a 3 niveaux d’évolution, débloqués via fragments collectés.
+
+**Collection et rareté :**
+Les pets sont classés par rareté (common, rare, epic, legendary) avec des visuels distinctifs. Les fragments sont obtenus via events, coffres spéciaux, et boutique. Un album de collection affiche la complétion globale et offre des récompenses de set (bonus permanents).
+
+### Zones de clan (Territories)
+
+**Conquête collaborative :**
+Les guildes peuvent conquérir des “territories” sur une carte partagée. Chaque territory offre un bonus global à la guilde (ex : +1 spin par jour, +5% coins de raid). Les conquêtes se font via des objectifs hebdomadaires cumulés (coins collectés, attaques réussies, missions PvE terminées).
+
+**Conflits saisonniers :**
+La carte est reset chaque saison (mensuel ou bimensuel). Les meilleures guildes gagnent des trophées cosmétiques permanents (bannières, statues dans le HQ de guilde) et des titres exclusifs.
+
+### Livrables Phase 11
+La fin de cette phase marque le passage à un jeu “mid-core” : une campagne PvE complète, un système de compagnons à collectionner, et une carte de territoires de guildes. La boucle long-terme s’enrichit et la progression devient plus stratégique.
+
+---
+
+## PHASE 12 : LIVE OPS AVANCÉ & ESPORTS LÉGER (Mois 10-12)
+
+### Objectifs
+Stabiliser l’économie, ajouter des événements compétitifs réguliers et mettre en place les fondations d’un écosystème communautaire compétitif (sans prétendre à un esport hardcore).
+
+### Tournois live
+
+**Format bracket court :**
+Tournois de 32 ou 64 joueurs avec rounds rapides basés sur des défis de spins (ex : meilleur gain en 30 spins). Les joueurs peuvent payer un ticket d’entrée (coins/gems) et gagner des récompenses proportionnelles au classement.
+
+**Calendrier fixe :**
+Tournois quotidiens “flash” (15 minutes) et tournois premium hebdomadaires avec prix élevés. Un calendrier visible in-game annonce les horaires à l’avance pour maximiser la participation.
+
+### Mode spectateur & replays
+
+**Spectateur léger :**
+Les joueurs peuvent observer les 3 meilleures performances d’un tournoi et les spins “highlight”. Les replays sont des reconstitutions des résultats (pas de streaming live), ce qui réduit la charge technique.
+
+**Partage social :**
+Les meilleurs replays peuvent être partagés en vidéo courtes (10-20s) avec watermark du jeu, facilitant le bouche-à-oreille et le marketing organique.
+
+### Économie et marketplace encadrée
+
+**Trading avancé :**
+Un marketplace limité permet d’échanger des cartes ou fragments rares via un système d’ordres (achat/vente), avec taxes en gems pour éviter l’inflation. Les trades sont plafonnés par jour pour limiter la spéculation.
+
+**Anti-fraude renforcée :**
+Analyse automatique des échanges suspects (transactions répétées entre mêmes comptes, prix anormaux) et gel automatique en cas d’abus. Une équipe de modération dispose d’outils pour annuler des trades frauduleux.
+
+### Livrables Phase 12
+Le jeu dispose d’un cycle d’événements compétitifs structuré, de replays partageables, et d’un marketplace encadré qui enrichit l’économie sans la déstabiliser. Kingdom Clash entre dans un rythme annuel durable et scalable.
+
+---
+
 ## MÉTRIQUES DE SUCCÈS ET KPIS
 
 ### Objectifs Année 1
