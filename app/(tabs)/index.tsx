@@ -90,8 +90,7 @@ export default function PlayScreen() {
     (count: number) => {
       if (playerStats.spins <= 0) return;
 
-      const spinsToStart = Math.min(count, playerStats.spins);
-      setAutoSpinRemaining(spinsToStart);
+      setAutoSpinRemaining(Math.min(count, playerStats.spins));
     },
     [playerStats.spins],
   );
