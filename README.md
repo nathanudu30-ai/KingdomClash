@@ -1,141 +1,119 @@
-# 🎮 Kingdom Clash - Jeu Mobile Social
+# Kingdom Clash - Jeu Mobile Social
 
 ## Vue d'ensemble
 
-Kingdom Clash est un jeu mobile social moderne combinant l'excitation d'une machine à sous avec la construction urbaine stratégique et le PvP compétitif. Les joueurs construisent leur empire quartier par quartier, attaquent les bases de leurs rivaux, forment des alliances dans des guildes puissantes, et dominent les classements mondiaux.
+Kingdom Clash est un jeu mobile social moderne combinant l'excitation d'une machine a sous avec la construction urbaine strategique et le PvP competitif. Les joueurs construisent leur empire quartier par quartier, attaquent les bases de leurs rivaux, forment des alliances dans des guildes puissantes, et dominent les classements mondiaux.
 
 ## Concept Core
 
-Le jeu s'inspire de Coin Master mais apporte des innovations majeures pour créer une expérience unique et moderne :
+Le jeu s'inspire de Coin Master mais apporte des innovations majeures pour creer une experience unique et moderne :
 
 **Piliers du gameplay :**
-- Machine à sous addictive avec mécaniques innovantes
-- Construction de districts urbains avec 4 bâtiments évolutifs
-- Système PvP actif avec attaques, raids et revanches
-- Guildes sociales avec chat temps réel, dons et guerres
-- Collection de cartes thématiques avec système de trading
-- Compétition infinie via ligues, saisons et tournois
+- Machine a sous addictive avec mecaniques innovantes
+- Construction de districts urbains avec 4 batiments evolutifs (style 2D illustre)
+- Systeme PvP actif avec attaques, raids et revanches
+- Guildes sociales avec chat temps reel, dons et guerres
+- Collection de cartes thematiques avec systeme de trading
+- Competition infinie via ligues, saisons et tournois
 
-**Univers :** Monde urbain moderne où le joueur bâtit son empire de quartier en quartier, du simple coin de rue jusqu'aux gratte-ciels futuristes.
+**Univers :** Monde urbain moderne ou le joueur batit son empire de quartier en quartier, du simple coin de rue jusqu'aux gratte-ciels futuristes.
 
 ## Stack Technique
 
-**Frontend**
-- Next.js 14 (App Router)
-- React 18
+**Frontend (Mobile natif)**
+- React Native + Expo
 - TypeScript
-- Tailwind CSS + shadcn/ui
-- Framer Motion (animations)
-- Three.js (rendu 3D des bâtiments)
-- Howler.js (système audio)
+- React Native Reanimated (animations)
+- Lottie (animations pre-rendues)
+- expo-av (systeme audio)
+- expo-haptics (vibrations)
+- i18next + react-i18next (i18n)
 
 **Backend**
 - Supabase (auth, database, realtime)
 - PostgreSQL avec Row Level Security
-- Edge Functions (logique serveur)
+- Edge Functions (logique serveur, validation anti-triche)
 - Storage (avatars, assets)
 
 **Services**
-- Stripe (paiements)
+- IAP natifs (StoreKit 2 / Google Play Billing)
 - PostHog (analytics)
 - Sentry (monitoring)
 - OneSignal (notifications push)
 
-## Timeline de Développement
+**Deploiement**
+- App Store (iOS)
+- Google Play Store (Android)
 
-**Durée totale : 24 semaines (6 mois) jusqu'au soft launch**
+## Timeline de Developpement
+
+**Duree totale : 24 semaines (6 mois) jusqu'au soft launch**
 
 ### Phase 1-2 : Fondations + Slot Machine (Semaines 1-5)
-Mise en place de l'architecture technique, design system, et développement de la mécanique centrale du slot machine avec animations fluides et système d'auto-spin.
+Setup React Native + Expo, design system, authentification (email, OAuth, guest), profil joueur, et slot machine avec animations fluides et auto-spin.
 
 ### Phase 3 : Construction Urbaine (Semaines 6-8)
-Développement du système de districts avec 4 bâtiments évolutifs, thématiques variées, et animations de construction en 3D.
+Systeme de districts avec 4 batiments evolutifs, 15-20 districts au lancement en 2D illustre, systeme de niveaux (niveau = districts completes), et inventaire.
 
-### Phase 4 : Système PvP (Semaines 9-11)
-Implementation du matchmaking intelligent, système d'attaques et raids, mécaniques de revenge, et mini-jeu de raid.
+### Phase 4 : Systeme PvP (Semaines 9-11)
+Matchmaking intelligent, attaques et raids, revenge, mini-jeu de raid, et systeme anti-triche (validation 100% serveur-side).
 
 ### Phase 5 : Social & Guildes (Semaines 12-14)
-Création du système de guildes complet avec chat temps réel, dons entre membres, boss raids coopératifs, et guerres de guildes.
+Systeme d'amis, guildes avec chat temps reel modere, dons, boss raids cooperatifs, et guerres de guildes.
 
 ### Phase 6 : Collection de Cartes (Semaines 15-16)
-Développement des sets de cartes thématiques, système d'obtention, et trading entre joueurs.
+Sets de cartes thematiques, systeme d'obtention, et trading entre amis.
 
-### Phase 7 : Ligues & Compétition (Semaines 17-18)
-Implementation des ligues à 5 tiers, saisons compétitives de 30 jours, et leaderboards multiples.
+### Phase 7 : Ligues & Competition (Semaines 17-18)
+Ligues a 5 tiers, saisons competitives de 30 jours, et leaderboards multiples.
 
-### Phase 8 : Économie & Monétisation (Semaine 19)
-Balance de l'économie du jeu, création de la boutique in-app, système de gems, et integration des paiements.
+### Phase 8 : Economie & Monetisation (Semaine 19)
+Balance economique, boutique in-app, gems, VIP Pass, et integration IAP natifs (Apple/Google).
 
-### Phase 9 : Events & Rétention (Semaine 20)
-Développement des events rotatifs, quêtes quotidiennes, achievements, et système de notifications push.
+### Phase 9 : Events & Retention (Semaine 20)
+Events rotatifs, quetes quotidiennes, achievements, battle pass, et notifications push.
 
 ### Phase 10 : Polish & Launch (Semaines 21-24)
-Tutorial FTUE, optimisations de performance, testing complet, et préparation du soft launch.
-
-## Structure du Repository
-
-Consultez le fichier `STRUCTURE.md` pour comprendre l'organisation complète du code et des assets.
+Tutorial FTUE, i18n (5 langues), accessibilite, conformite legale (RGPD, CGU), infrastructure (backups, monitoring), support client, testing, et soft launch.
 
 ## Documentation
 
-Toute la documentation détaillée se trouve dans le dossier `/docs` :
+Toute la documentation detaillee se trouve dans le dossier `/docs` :
 
-- `roadmap/` : Roadmap détaillée par phase
-- `game-design/` : Documents de game design
-- `technical/` : Documentation technique
-- `art/` : Guidelines artistiques
-- `marketing/` : Stratégie marketing
+- [Roadmap complete](./docs/ROADMAP_COMPLETE.md) - Plan detaille des 24 semaines (v2.0 FINALE)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
 ```bash
-# 1. Installer les dépendances
+# 1. Installer les dependances
 npm install
 
 # 2. Copier le fichier d'environnement
-cp .env.local.example .env.local
+cp .env.example .env
 
-# 3. Configurer vos variables Supabase dans .env.local
-# NEXT_PUBLIC_SUPABASE_URL=votre_url
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_clé
+# 3. Configurer vos variables Supabase dans .env
+# EXPO_PUBLIC_SUPABASE_URL=votre_url
+# EXPO_PUBLIC_SUPABASE_ANON_KEY=votre_cle
 
-# 4. Lancer le serveur de développement
-npm run dev
+# 4. Lancer le serveur de developpement Expo
+npx expo start
 ```
-
-Le jeu sera accessible sur [http://localhost:3000](http://localhost:3000)
 
 ### Configuration Supabase
 
-1. Créez un compte sur [supabase.com](https://supabase.com)
-2. Créez un nouveau projet
-3. Exécutez la migration SQL dans `supabase/migrations/001_initial_schema.sql`
-4. Copiez votre URL et clé anonyme dans `.env.local`
-
-### Fonctionnalités actuelles (v0.1.0)
-
-✅ **Slot Machine fonctionnel** avec animations fluides
-✅ **Design system complet** avec Tailwind CSS
-✅ **3 options de paris** (×1, ×2, ×5)
-✅ **Système de rouleaux** avec 6 symboles
-✅ **Détection des victoires** (2 ou 3 symboles identiques)
-✅ **Interface responsive** mobile-first
-✅ **Header avec ressources** (Coins, Gems, Spins)
-✅ **Navigation bottom** pour futures pages
-✅ **Base de données SQL** avec Row Level Security
-
-### Prochaines étapes
-
-Consultez `TODO.md` pour voir les prochaines fonctionnalités à développer.
+1. Creez un compte sur [supabase.com](https://supabase.com)
+2. Creez un nouveau projet
+3. Executez les migrations SQL dans `supabase/migrations/`
+4. Copiez votre URL et cle anonyme dans `.env`
 
 ## Licence
 
-Tous droits réservés © 2026
+Tous droits reserves (c) 2026
 
 ---
 
-**Statut actuel :** Phase de planification et setup initial
-**Version :** 0.1.0
-**Dernière mise à jour :** Février 2026
+**Statut actuel :** Phase de planification terminee, pret pour le code
+**Version :** 0.2.0
+**Derniere mise a jour :** Fevrier 2026
