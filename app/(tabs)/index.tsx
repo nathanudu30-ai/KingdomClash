@@ -6,35 +6,36 @@ import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { Button, Card, CoinDisplay } from '@/components/ui';
-import { SlotMachine } from '@/components/game/SlotMachine';
+import { SlotMachine } from '@/components/game';
 import { spin, calculateReward } from '@/lib/game-logic';
-import type { SlotResult, PlayerStats } from '@/types/game';
+import { useAuth } from '@/lib/auth';
+import { getPlayerLevel } from '@/types/game';
+import type { SlotResult } from '@/types/game';
 
-// Initial player stats for demo
-const INITIAL_STATS: PlayerStats = {
-  coins: 10000,
-  spins: 50,
-  shields: 0,
-  attackMultiplier: 1,
-  districtsCompleted: 0,
-  totalAttacks: 0,
-  totalRaids: 0,
-};
-
-export default function HomeScreen() {
-  const [stats, setStats] = useState<PlayerStats>(INITIAL_STATS);
+export default function PlayScreen() {
+  const { player, stats, refreshStats } = useAuth();
   const [currentResult, setCurrentResult] = useState<SlotResult | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [lastWin, setLastWin] = useState<string | null>(null);
 
+  // Use auth stats or default
+  const playerStats = stats ?? {
+    coins: 10000,
+    spins: 50,
+    shields: 0,
+    attackMultiplier: 1,
+    districtsCompleted: 0,
+    totalAttacks: 0,
+    totalRaids: 0,
+  };
+
+  const level = getPlayerLevel(playerStats.districtsCompleted);
+
   const handleSpin = useCallback(async () => {
-    if (stats.spins <= 0 || isSpinning) return;
+    if (playerStats.spins <= 0 || isSpinning) return;
 
     setIsSpinning(true);
     setLastWin(null);
-
-    // Deduct spin
-    setStats((prev) => ({ ...prev, spins: prev.spins - 1 }));
 
     // Generate result
     const result = spin();
@@ -42,15 +43,15 @@ export default function HomeScreen() {
 
     // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  }, [stats.spins, isSpinning]);
+  }, [playerStats.spins, isSpinning]);
 
-  const handleSpinComplete = useCallback(() => {
+  const handleSpinComplete = useCallback(async () => {
     setIsSpinning(false);
 
     if (!currentResult) return;
 
     // Calculate reward
-    const reward = calculateReward(currentResult, 1, stats.attackMultiplier);
+    const reward = calculateReward(currentResult, 1, playerStats.attackMultiplier);
 
     if (reward) {
       // Haptic for win
@@ -59,40 +60,51 @@ export default function HomeScreen() {
       switch (reward.type) {
         case 'coins':
         case 'jackpot':
-          setStats((prev) => ({ ...prev, coins: prev.coins + reward.amount }));
           setLastWin(`+${reward.amount.toLocaleString()} coins!`);
           break;
         case 'shield':
-          setStats((prev) => ({ ...prev, shields: prev.shields + reward.amount }));
-          setLastWin(`+${reward.amount} shield${reward.amount > 1 ? 's' : ''}!`);
+          setLastWin(`+${reward.amount} bouclier${reward.amount > 1 ? 's' : ''}!`);
           break;
         case 'energy':
-          setStats((prev) => ({ ...prev, spins: prev.spins + reward.amount }));
           setLastWin(`+${reward.amount} spins!`);
           break;
         case 'attack':
-          setLastWin('Attack ready!');
+          setLastWin('Attaque prête!');
           break;
         case 'raid':
-          setLastWin('Raid ready!');
+          setLastWin('Raid prêt!');
           break;
         case 'bonus':
-          setLastWin('BONUS ROUND!');
+          setLastWin('BONUS!');
           break;
       }
+
+      // Refresh stats from server
+      await refreshStats();
     }
-  }, [currentResult, stats.attackMultiplier]);
+  }, [currentResult, playerStats.attackMultiplier, refreshStats]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
+        <View style={styles.levelBadge}>
+          <Text style={styles.levelText}>Niv. {level}</Text>
+        </View>
         <Text style={styles.title}>Kingdom Clash</Text>
-        <View style={styles.statsRow}>
-          <CoinDisplay amount={stats.coins} size="lg" />
-          <View style={styles.spinsContainer}>
-            <Text style={styles.spinsLabel}>⚡ {stats.spins}</Text>
-          </View>
+        <View style={styles.placeholder} />
+      </View>
+
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        <CoinDisplay amount={playerStats.coins} size="lg" />
+        <View style={styles.resourceItem}>
+          <Text style={styles.resourceEmoji}>⚡</Text>
+          <Text style={styles.resourceValue}>{playerStats.spins}</Text>
+        </View>
+        <View style={styles.resourceItem}>
+          <Text style={styles.resourceEmoji}>🛡️</Text>
+          <Text style={styles.resourceValue}>{playerStats.shields}</Text>
         </View>
       </View>
 
@@ -121,12 +133,14 @@ export default function HomeScreen() {
           onPress={handleSpin}
           size="lg"
           fullWidth
-          disabled={stats.spins <= 0 || isSpinning}
+          disabled={playerStats.spins <= 0 || isSpinning}
           loading={isSpinning}
         />
 
-        {stats.spins <= 0 && (
-          <Text style={styles.noSpinsText}>No spins left! Wait for energy refill.</Text>
+        {playerStats.spins <= 0 && (
+          <Text style={styles.noSpinsText}>
+            Plus de spins! Attendez le rechargement.
+          </Text>
         )}
       </View>
     </SafeAreaView>
@@ -139,28 +153,50 @@ const styles = StyleSheet.create({
     backgroundColor: colors.navy[900],
   },
   header: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  levelBadge: {
+    backgroundColor: colors.primary[500],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 12,
+  },
+  levelText: {
+    ...typography.captionBold,
+    color: colors.white,
   },
   title: {
-    ...typography.h1,
+    ...typography.h2,
     color: colors.white,
-    textAlign: 'center',
+  },
+  placeholder: {
+    width: 50,
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
     alignItems: 'center',
-  },
-  spinsContainer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
     backgroundColor: colors.navy[800],
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: 20,
+    marginHorizontal: spacing.lg,
+    borderRadius: 16,
   },
-  spinsLabel: {
+  resourceItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  resourceEmoji: {
+    fontSize: 20,
+  },
+  resourceValue: {
     ...typography.bodyBold,
-    color: colors.accent[400],
+    color: colors.white,
   },
   slotContainer: {
     flex: 1,
