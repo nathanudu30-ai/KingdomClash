@@ -16,6 +16,7 @@ export default function PlayScreen() {
   const { player, stats, refreshStats } = useAuth();
   const [currentResult, setCurrentResult] = useState<SlotResult | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [autoSpinRemaining, setAutoSpinRemaining] = useState(0);
   const [lastWin, setLastWin] = useState<string | null>(null);
 
   // Use auth stats or default
@@ -83,6 +84,16 @@ export default function PlayScreen() {
       await refreshStats();
     }
   }, [currentResult, playerStats.attackMultiplier, refreshStats]);
+
+  const startAutoSpin = useCallback(
+    (count: number) => {
+      if (playerStats.spins <= 0) return;
+
+      const spinsToStart = Math.min(count, playerStats.spins);
+      setAutoSpinRemaining(spinsToStart);
+    },
+    [playerStats.spins],
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
