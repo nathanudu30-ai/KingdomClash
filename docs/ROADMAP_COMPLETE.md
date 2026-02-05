@@ -14,7 +14,7 @@ Ce document présente la roadmap complète du développement de Kingdom Clash su
 ### Architecture technique
 
 **Structure globale du projet :**
-Le projet utilise Next.js 14 avec l'App Router pour une application web progressive optimisée mobile. La structure se divise entre le frontend React pour l'interface utilisateur, le backend Supabase pour les données et l'authentification, et une couche de logique métier pour les mécaniques de jeu. Les composants UI suivent le pattern atomic design avec un design system complet basé sur Tailwind CSS et shadcn/ui. Le système d'animations utilise Framer Motion pour les transitions fluides et GSAP pour les animations complexes du slot machine.
+Le projet utilise React Native avec Expo pour créer une application mobile native déployée sur l'App Store (iOS) et le Google Play Store (Android). La structure se divise entre le frontend React Native pour l'interface utilisateur, le backend Supabase pour les données et l'authentification, et une couche de logique métier pour les mécaniques de jeu. Les composants UI suivent le pattern atomic design avec un design system custom basé sur React Native StyleSheet et des composants réutilisables. Le système d'animations utilise React Native Reanimated pour les transitions fluides et les animations complexes du slot machine. L'audio est géré via expo-av pour les sons et effets haptiques.
 
 **Base de données PostgreSQL :**
 Le schéma initial comprend les tables essentielles : players pour les profils utilisateurs avec leurs ressources (coins, gems, spins, shields), districts pour les zones construites, spin_history pour l'historique des spins, et les tables de configuration pour les symboles et probabilités du slot. Toutes les tables utilisent Row Level Security pour garantir que les joueurs ne peuvent accéder qu'à leurs propres données.
@@ -39,7 +39,7 @@ Chaque spin dure environ 2-3 secondes avec une animation échelonnée des roulea
 Les joueurs peuvent activer l'auto-spin pour 10, 50 ou 100 spins consécutifs. Le système lance automatiquement les spins avec un délai de 500ms entre chaque pour maintenir le rythme sans saturer l'utilisateur. Un bouton stop permet d'arrêter l'auto-spin à tout moment. Cette feature est essentielle pour les joueurs qui veulent progresser rapidement sans interaction constante, particulièrement utile lors des events double coins.
 
 **Système audio :**
-Howler.js gère tous les sons du jeu avec un système de pooling pour éviter les latences. Chaque action a son son distinctif : le démarrage du spin produit un roulement de tambour crescendo, chaque rouleau qui s'arrête fait un "clunk" métallique satisfaisant, les gains de coins produisent des "bling" cristallins, et les gros gains déclenchent une fanfare épique. Les sons peuvent être ajustés en volume ou désactivés dans les settings, et le système supporte les effets de vibration haptique sur mobile pour renforcer le feedback.
+expo-av gère tous les sons du jeu avec un système de pooling pour éviter les latences. Chaque action a son son distinctif : le démarrage du spin produit un roulement de tambour crescendo, chaque rouleau qui s'arrête fait un "clunk" métallique satisfaisant, les gains de coins produisent des "bling" cristallins, et les gros gains déclenchent une fanfare épique. Les sons peuvent être ajustés en volume ou désactivés dans les settings. Le système supporte les vibrations haptiques natives via expo-haptics pour renforcer le feedback tactile (léger pour chaque rouleau qui s'arrête, fort pour les gros gains).
 
 ### Système d'authentification
 
@@ -73,21 +73,26 @@ Les paramètres du joueur incluent : gestion du compte (email, mot de passe, sup
 ### Objectifs
 Développer le système de progression principale du jeu : la construction de districts urbains. Les joueurs utilisent les coins gagnés au slot pour construire et améliorer des bâtiments, débloquer de nouveaux districts, et progresser à travers une série de thèmes urbains variés.
 
+### Système de niveaux
+
+**Niveau = Districts complétés :**
+Le système de niveaux est volontairement simple et lisible, inspiré de Coin Master. Le niveau du joueur correspond directement au nombre de districts qu'il a complétés. Un joueur qui a complété 5 districts est niveau 5. Il n'y a pas de système d'XP séparé : la progression est claire, tangible, et liée à un accomplissement concret. Le niveau s'affiche partout (profil, chat, leaderboards, écran PvP) et sert de référence pour le matchmaking, les conditions d'accès aux features (guildes au niveau 5, ligues au niveau 10), et le scaling des récompenses et des coûts.
+
 ### Système de districts
 
 **Structure des districts :**
 Chaque district contient exactement 4 bâtiments : HQ (Headquarters), Bank, Factory, et Tower. Chaque bâtiment possède 5 niveaux d'amélioration, ce qui donne 20 upgrades à compléter par district. Les coûts augmentent exponentiellement : le premier niveau coûte environ 5000 coins, le niveau 5 peut coûter 300000 coins. Compléter entièrement un district requiert approximativement 3 millions de coins, soit environ 6000 spins, ce qui représente plusieurs jours de jeu pour un joueur gratuit ou quelques heures pour un joueur payant.
 
 **Thématiques et progression :**
-Le jeu lance avec au moins 50 districts différents, chacun avec sa thématique unique et son esthétique visuelle. Les premiers districts représentent des quartiers modestes : Street Corner (ghetto), Food Market (marché), Garage District (industriel). La progression continue vers des zones plus prestigieuses : Downtown (urbain), Business Park (corporatif), Harbor (port), Tech Campus (silicon valley), Airport (aviation), Casino Strip (Vegas). Au-delà du district 50, un système de génération procédurale crée des districts infinis avec des coûts exponentiellement croissants, assurant une progression sans fin pour les joueurs hardcore.
+Le jeu lance avec 15-20 districts au lancement, chacun avec sa thématique unique et son esthétique visuelle illustrée en 2D (style Coin Master). Les premiers districts représentent des quartiers modestes : Street Corner (ghetto), Food Market (marché), Garage District (industriel). La progression continue vers des zones plus prestigieuses : Downtown (urbain), Business Park (corporatif), Harbor (port), Tech Campus (silicon valley). De nouveaux districts sont ajoutés régulièrement en live ops (1-2 par mois post-launch) pour maintenir la fraîcheur du contenu et donner aux joueurs des raisons de revenir.
 
-### Rendu 3D des bâtiments
+### Rendu 2D illustré des bâtiments
 
-**Implementation Three.js :**
-Chaque bâtiment est rendu en 3D isométrique utilisant Three.js pour créer une profondeur visuelle attrayante. Les bâtiments évoluent visuellement à chaque niveau : au niveau 1, le HQ est une simple baraque en bois ; au niveau 5, c'est un gratte-ciel moderne avec des fenêtres illuminées et des antennes. Le système utilise des géométries procédurales pour générer les bâtiments, permettant de créer des dizaines de variations sans alourdir les assets. Les matériaux utilisent des propriétés PBR (Physically Based Rendering) avec metalness et roughness pour un rendu réaliste malgré le style légèrement stylisé.
+**Style visuel Coin Master :**
+Chaque bâtiment est rendu en illustrations 2D colorées et détaillées, dans un style cartoon/illustratif similaire à Coin Master. Les bâtiments évoluent visuellement à chaque niveau : au niveau 1, le HQ est une simple baraque en bois ; au niveau 5, c'est un gratte-ciel moderne avec des fenêtres illuminées et des néons. Chaque niveau intermédiaire montre une évolution progressive (ajout d'un étage, d'une enseigne, d'une clôture, etc.). Les illustrations sont réalisées en PNG/SVG haute résolution avec des versions @2x et @3x pour les écrans Retina. Le style est coloré, fun, et immédiatement lisible sur petit écran.
 
 **Animations de construction :**
-Lorsqu'un joueur upgrade un bâtiment, une animation de 3 secondes se déclenche. Le bâtiment actuel se contracte et devient semi-transparent, puis disparaît dans une explosion de particules dorées. Le nouveau bâtiment apparaît progressivement avec un effet de construction accélérée : la fondation se matérialise d'abord, puis les murs montent rapidement, et enfin le toit se pose avec un flash lumineux. Des confettis explosent autour du bâtiment complété, et un son de fanfare célèbre l'accomplissement. Ces animations créent une satisfaction immédiate et récompensent visuellement chaque progression.
+Lorsqu'un joueur upgrade un bâtiment, une animation de 2 secondes se déclenche via React Native Reanimated. L'ancien bâtiment se réduit avec un effet de squash, disparaît dans un flash lumineux, puis la nouvelle illustration apparaît avec un effet de scale-up et un léger bounce. Des confettis et particules dorées explosent autour du bâtiment complété (rendu via react-native-skia ou des animations Lottie pré-rendues). Un son de fanfare célèbre l'accomplissement et une vibration haptique accompagne le feedback. Ces animations créent une satisfaction immédiate et récompensent visuellement chaque progression.
 
 ### Transitions entre districts
 
@@ -211,6 +216,17 @@ Le chat utilise Supabase Realtime pour synchroniser instantanément les messages
 
 **Features sociales :**
 Les membres peuvent mentionner d'autres joueurs avec @username, ce qui déclenche une notification push au joueur mentionné. Certains messages automatiques du système apparaissent également : quand un membre rejoint ou quitte la guilde, quand quelqu'un upgrade la guilde, quand un boss est vaincu, etc. Ces messages automatiques créent un sentiment de vie et d'activité dans le chat même pendant les périodes calmes.
+
+### Modération du chat
+
+**Filtre automatique :**
+Tous les messages passent par un filtre de mots interdits avant publication. Le filtre couvre les insultes, le langage haineux, les contenus sexuels, et le spam dans les langues supportées. Le filtre est configurable côté serveur et mis à jour sans mise à jour de l'app. Les messages contenant des mots filtrés sont soit bloqués (contenu très offensant), soit censurés avec des astérisques (contenu modéré). Le filtre utilise aussi la détection de contournement (espaces entre les lettres, caractères spéciaux, leet speak).
+
+**Outils de modération :**
+Les leaders et co-leaders de guilde ont des pouvoirs de modération : supprimer un message, mute un membre (1h, 24h, 7j, permanent), kicker un membre, et bannir un membre (avec impossibilité de re-rejoindre). Les elders peuvent uniquement mute pendant 1h. Chaque action de modération est loguée. Les joueurs peuvent aussi signaler un message via un bouton "Signaler" qui envoie le message, le contexte (5 messages avant/après), et les informations du signaleur à une file de modération.
+
+**Signalement et sanctions :**
+Les signalements sont revus manuellement (ou via un système automatisé si le volume le justifie). Les joueurs avec plusieurs signalements confirmés reçoivent des sanctions progressives : avertissement, mute global de 24h, mute global de 7j, suspension temporaire du compte, et bannissement permanent en cas de récidive grave. Les sanctions sont communiquées au joueur avec la raison et la possibilité de faire appel.
 
 ### Système de dons
 
@@ -351,6 +367,20 @@ Un joueur qui dépense 10€ par mois peut acheter 1500 spins (pack mega à 9.99
 **Sinks et faucets :**
 Le jeu nécessite des "sinks" (mécanismes qui retirent des ressources) pour éviter l'inflation et maintenir la valeur perçue des coins. Les principaux sinks sont les upgrades de bâtiments (consomme des coins), le refresh de cibles PvP (consomme des gems), l'achat de coffres de cartes (consomme des gems). Les "faucets" (sources de ressources) incluent les spins, les attaques PvP, les récompenses de guilde, et les events. L'équilibre entre sinks et faucets est ajusté en continu via analytics pour maintenir une économie saine.
 
+### Intégration des paiements natifs (IAP)
+
+**SDK natifs obligatoires :**
+Les achats in-app passent obligatoirement par les systèmes de paiement natifs des stores : StoreKit 2 pour iOS (App Store) et Google Play Billing Library pour Android (Play Store). L'utilisation de Stripe ou de tout autre processeur de paiement tiers est interdite par les politiques des stores pour les achats de biens virtuels (spins, coins, gems). La bibliothèque react-native-iap (ou expo-in-app-purchases) est utilisée pour abstraire les deux SDK et offrir une API unifiée côté React Native.
+
+**Commission des stores :**
+Apple et Google prélèvent une commission de 15% (pour les développeurs gagnant moins de 1M$/an, programme Small Business) ou 30% au-delà. Les prix des packs sont donc calibrés en tenant compte de cette commission. Les abonnements (VIP Pass) bénéficient d'une commission réduite à 15% après la première année d'abonnement d'un utilisateur.
+
+**Validation des achats côté serveur :**
+Chaque achat est validé côté serveur via les API de validation des stores (App Store Server API pour Apple, Google Play Developer API pour Google). Le client envoie le reçu d'achat au serveur Supabase Edge Function, qui vérifie l'authenticité du reçu auprès du store, puis crédite les ressources au joueur en transaction atomique. Cette validation empêche les achats frauduleux (reçus falsifiés, achats annulés après crédit). Les reçus sont stockés dans une table `purchase_history` pour audit.
+
+**Gestion des abonnements :**
+Le VIP Pass est un abonnement auto-renouvelable géré nativement par les stores. Le serveur vérifie quotidiennement le statut des abonnements via les notifications serveur (App Store Server Notifications v2, Google Play Real-time Developer Notifications). En cas d'expiration, de résiliation, ou de problème de paiement, les avantages VIP sont automatiquement désactivés. Le joueur reçoit une notification in-app l'informant de l'expiration avec un bouton de réabonnement.
+
 ### Boutique in-app
 
 **Packs de spins :**
@@ -470,16 +500,16 @@ Le tutorial donne des récompenses très généreuses pour accrocher le joueur :
 ### Optimisations de performance
 
 **Target de 60 FPS constant :**
-Le jeu doit tourner à 60 FPS même sur des devices mid-range de 2-3 ans. Cela nécessite des optimisations agressives : utilisation de will-change CSS pour hinter le browser sur les animations, utilisation de transform et opacity plutôt que de propriétés layout-inducing, lazy loading des images avec IntersectionObserver, code splitting pour ne charger que les composants nécessaires à chaque page, tree shaking pour éliminer le code mort, et minification + compression gzip des assets.
+Le jeu doit tourner à 60 FPS même sur des devices mid-range de 2-3 ans. Cela nécessite des optimisations agressives : utilisation de React Native Reanimated pour les animations sur le thread UI natif (pas le thread JavaScript), optimisation des listes avec FlashList au lieu de FlatList pour les longues listes (leaderboards, inventaire), utilisation du moteur Hermes pour un démarrage rapide et une consommation mémoire réduite, lazy loading des écrans non visibles via React Navigation lazy, et optimisation des images avec des caches locaux (expo-image).
 
 **Réduction du bundle size :**
-Le bundle initial doit être sous 2 MB pour assurer un chargement rapide même sur 3G. Les stratégies incluent : utiliser WebP pour les images (30% plus léger que PNG), utiliser des icon fonts ou des SVG inline plutôt que des images PNG pour les icônes, lazy loader les routes non-essentielles, utiliser dynamic imports pour les composants lourds (Three.js pour les bâtiments 3D), et optimiser le build avec Webpack/Vite.
+Le bundle initial de l'app doit rester sous 50 MB pour faciliter le téléchargement sur les stores. Les stratégies incluent : utiliser WebP pour les images d'illustration des districts (30% plus léger que PNG), utiliser des SVG pour les icônes d'interface, lazy loader les assets des districts non encore atteints (téléchargement à la demande), optimiser les fichiers audio (compression OGG/AAC), et utiliser Hermes comme moteur JavaScript pour React Native (réduction de 50% de la mémoire et démarrage plus rapide).
 
 **Optimisations spécifiques mobile :**
-Sur mobile, les optimisations incluent : désactiver les animations complexes sur devices bas de gamme (détection automatique via performance API), utiliser des textures lower-res pour les bâtiments 3D, réduire le nombre de particules dans les effets, implémenter un système de pooling pour réutiliser les objets plutôt que de créer/détruire constamment, et utiliser requestAnimationFrame pour synchroniser les animations avec le refresh du device.
+Les optimisations natives incluent : désactiver les animations complexes sur devices bas de gamme (détection automatique via les caractéristiques du device), utiliser des illustrations lower-res pour les devices à faible RAM, réduire le nombre de particules dans les effets selon la puissance du device, implémenter un système de pooling pour les composants de liste via FlatList/FlashList, et optimiser les re-renders avec React.memo et useMemo pour maintenir 60 FPS constant.
 
-**Mode offline :**
-Le jeu doit gérer gracieusement la perte de connexion. Les actions du joueur sont queued localement et synchronisées dès que la connexion revient. Un banner discret informe le joueur qu'il est offline. Certaines actions (comme les attaques PvP et le trading) ne sont pas disponibles offline, mais le joueur peut continuer à spin le slot et à upgrade des bâtiments. Cette robustesse évite la frustration des erreurs réseau et maintient l'engagement même avec une connexion instable.
+**Gestion de la connexion :**
+Le jeu nécessite une connexion internet permanente pour garantir la sécurité et l'intégrité des données (toutes les actions sont validées serveur-side). En cas de perte de connexion, un overlay semi-transparent s'affiche avec un message "Connexion perdue - Reconnexion en cours..." et un spinner animé. Le système tente automatiquement de se reconnecter toutes les 3 secondes. Dès que la connexion revient, l'overlay disparaît et le jeu reprend exactement où il en était. Si la déconnexion survient pendant un spin ou une action critique, l'état est réconcilié avec le serveur à la reconnexion (le résultat du spin est déjà calculé serveur-side). Un bouton "Réessayer" permet au joueur de forcer une tentative de reconnexion manuelle.
 
 ### Polish visuel et audio
 
@@ -495,7 +525,7 @@ Chaque district possède une musique d'ambiance loopable de 2-3 minutes. Le menu
 ### Localisation et internationalisation (i18n)
 
 **Architecture multi-langues :**
-Le système i18n utilise la bibliothèque next-intl intégrée à Next.js 14 pour gérer les traductions. Toutes les chaînes de texte de l'interface sont externalisées dans des fichiers JSON par langue, organisés par namespace (common, slot, pvp, guild, shop, notifications). Le système supporte le pluriel, le formatage des nombres selon la locale (1,000 vs 1.000), et le formatage des dates. Le changement de langue est instantané sans rechargement de page grâce au système de bundles dynamiques.
+Le système i18n utilise la bibliothèque i18next avec react-i18next pour gérer les traductions dans React Native. Toutes les chaînes de texte de l'interface sont externalisées dans des fichiers JSON par langue, organisés par namespace (common, slot, pvp, guild, shop, notifications). Le système supporte le pluriel, le formatage des nombres selon la locale (1,000 vs 1.000), et le formatage des dates. Le changement de langue est instantané sans rechargement de page grâce au système de bundles dynamiques.
 
 **Langues supportées au lancement :**
 Le soft launch cible les marchés anglophones, donc l'anglais (en) est la langue par défaut. Le français (fr) est la deuxième langue prioritaire (marché francophone). L'espagnol (es), le portugais brésilien (pt-BR), et l'allemand (de) sont ajoutés avant le lancement global. Chaque traduction est réalisée par des traducteurs natifs (pas de traduction automatique) pour garantir la qualité et le ton approprié pour un jeu (informal, dynamique, fun). Les textes du slot machine et des notifications push sont particulièrement soignés car ils impactent directement l'engagement.
@@ -509,7 +539,7 @@ Au-delà de la traduction pure, certains éléments sont adaptés culturellement
 Le jeu respecte les guidelines WCAG 2.1 niveau AA pour l'accessibilité web. Le contraste des couleurs entre le texte et l'arrière-plan est au minimum de 4.5:1 pour le texte normal et 3:1 pour le texte large. Tous les éléments interactifs ont une taille minimale de 44x44px pour faciliter le tap sur mobile. Les animations peuvent être réduites ou désactivées via le setting "Reduce Motion" qui respecte aussi la préférence système `prefers-reduced-motion`.
 
 **Support des lecteurs d'écran :**
-Tous les éléments d'interface possèdent des attributs ARIA appropriés. Les images et icônes ont des alt-texts descriptifs. Les résultats de spin sont annoncés vocalement ("Vous avez obtenu : Coins, Attack, Shield. Gain : 500 coins"). Les boutons et liens ont des labels explicites. La navigation est entièrement possible au clavier/switch control. Le focus est géré correctement lors de l'ouverture/fermeture des modales.
+Tous les éléments d'interface possèdent des propriétés d'accessibilité React Native appropriées (accessibilityLabel, accessibilityRole, accessibilityHint). Les images et icônes ont des descriptions pour VoiceOver (iOS) et TalkBack (Android). Les résultats de spin sont annoncés vocalement via AccessibilityInfo.announceForAccessibility ("Vous avez obtenu : Coins, Attack, Shield. Gain : 500 coins"). Les boutons ont des labels explicites. La navigation respecte l'ordre logique de lecture.
 
 **Options d'accessibilité in-game :**
 Les settings du jeu incluent une section Accessibilité avec : taille du texte ajustable (normal, large, extra-large), mode daltonien (les symboles du slot utilisent des formes distinctives en plus des couleurs), réduction des animations (désactive particules, shake, et flashs), mode contraste élevé (bordures plus marquées, backgrounds opaques au lieu du glassmorphism), et vitesse des animations ajustable (lent, normal, rapide). Ces options permettent à un public plus large de profiter du jeu.
@@ -523,7 +553,7 @@ Le jeu collecte des données personnelles (email, adresse IP, données de jeu, h
 Les CGU couvrent : les règles du jeu (ce qui est interdit : triche, multi-comptes, échanges d'argent réel), la politique de monétisation (achats in-app non remboursables sauf obligation légale, description claire de ce que les joueurs achètent), les droits de propriété intellectuelle (tout le contenu du jeu appartient à l'éditeur, les joueurs ont une licence d'utilisation), la limitation de responsabilité, et les conditions de suspension/bannissement de compte. Les CGU sont accessibles depuis les settings et doivent être acceptées à la création du compte.
 
 **Politique de confidentialité :**
-Un document séparé détaille : quelles données sont collectées et pourquoi, comment elles sont stockées (chiffrement at rest dans Supabase, hébergement UE si possible), avec qui elles sont partagées (Stripe pour les paiements, PostHog pour les analytics, OneSignal pour les notifications), combien de temps elles sont conservées, et les droits des utilisateurs. Ce document est rédigé dans un langage accessible (pas uniquement du jargon juridique) et est disponible dans toutes les langues supportées.
+Un document séparé détaille : quelles données sont collectées et pourquoi, comment elles sont stockées (chiffrement at rest dans Supabase, hébergement UE si possible), avec qui elles sont partagées (Apple/Google pour les paiements IAP, PostHog pour les analytics, OneSignal pour les notifications), combien de temps elles sont conservées, et les droits des utilisateurs. Ce document est rédigé dans un langage accessible (pas uniquement du jargon juridique) et est disponible dans toutes les langues supportées.
 
 **Obligations spécifiques aux achats in-app :**
 Pour la France et l'UE : affichage clair des prix TTC, droit de rétractation de 14 jours pour les achats non consommés, facturation conforme, et mention "Achats intégrés" sur les stores. Pour les mineurs : un avertissement parental est recommandé, les achats au-dessus de 50€ nécessitent une double confirmation, et un plafond de dépense mensuel optionnel peut être activé dans les settings parentaux. Les loot boxes (coffres de cartes) affichent les probabilités de drop conformément aux régulations de l'App Store et du Google Play Store.
@@ -540,7 +570,18 @@ Supabase fournit des backups automatiques quotidiens sur le plan Pro. En complé
 Les migrations de schéma DB sont gérées via des fichiers SQL versionnés et numérotés séquentiellement dans `supabase/migrations/`. Chaque migration est idempotente (peut être rejouée sans erreur) et inclut un rollback possible. En production, les migrations sont appliquées via la CLI Supabase pendant les fenêtres de maintenance annoncées. Pour les changements non-breaking (ajout de colonne nullable, nouvel index), les migrations sont appliquées sans downtime. Pour les changements breaking (renommage de colonne, suppression de table), une stratégie en trois étapes est utilisée : (1) ajouter la nouvelle structure en parallèle, (2) migrer les données et le code pour utiliser la nouvelle structure, (3) supprimer l'ancienne structure après vérification. Un système de feature flags permet de déployer du code qui supporte l'ancienne et la nouvelle structure simultanément pendant la transition.
 
 **Monitoring et alerting :**
-Sentry capture toutes les erreurs frontend et backend avec le contexte complet (stack trace, device info, user ID, action en cours). Des alertes sont configurées pour : taux d'erreur supérieur à 1% (warning) ou 5% (critique), temps de réponse API supérieur à 500ms (warning) ou 2s (critique), nombre de joueurs actifs en chute de plus de 30% par rapport à la même heure la veille, et échec de paiement Stripe en série. PostHog monitore les métriques business en temps réel avec des dashboards partagés.
+Sentry capture toutes les erreurs frontend et backend avec le contexte complet (stack trace, device info, user ID, action en cours). Des alertes sont configurées pour : taux d'erreur supérieur à 1% (warning) ou 5% (critique), temps de réponse API supérieur à 500ms (warning) ou 2s (critique), nombre de joueurs actifs en chute de plus de 30% par rapport à la même heure la veille, et échec de paiement IAP en série. PostHog monitore les métriques business en temps réel avec des dashboards partagés.
+
+### Support client
+
+**Système de tickets in-app :**
+Un bouton "Aide & Support" est accessible depuis les settings et depuis chaque écran du jeu (via un menu contextuel). Le joueur peut soumettre un ticket en choisissant une catégorie (problème de paiement, bug technique, signalement de joueur, question sur le jeu, demande de suppression de compte) et en décrivant son problème. Chaque ticket inclut automatiquement les métadonnées du joueur (ID, device, version de l'app, OS, dernier spin, dernière action) pour faciliter le diagnostic. Le joueur reçoit un numéro de ticket et peut suivre l'état de sa demande dans un écran "Mes tickets".
+
+**FAQ et aide automatisée :**
+Avant de créer un ticket, le joueur voit une section FAQ dynamique avec les 10 questions les plus fréquentes (comment récupérer mon compte, comment annuler un abonnement, comment signaler un joueur, etc.). Les réponses sont rédigées clairement et mises à jour régulièrement. Si le joueur ne trouve pas sa réponse, il peut créer un ticket. Ce système de déflexion réduit le volume de tickets de 40-60% et permet de se concentrer sur les problèmes réels.
+
+**Délais de réponse :**
+Les tickets sont traités avec des SLA définis par catégorie : problème de paiement (réponse sous 24h, priorité haute), bug bloquant (réponse sous 24h), signalement de joueur (réponse sous 48h), question générale (réponse sous 72h). Les joueurs VIP bénéficient d'un SLA réduit de moitié. Les réponses sont envoyées par notification push et par email, et le joueur peut répondre directement dans le chat du ticket.
 
 ### Testing exhaustif
 
@@ -615,13 +656,25 @@ PostHog est utilisé pour tracker toutes les métriques comportementales : évé
 
 ## RÉCAPITULATIF DE LA TIMELINE
 
-Le développement complet de Kingdom Clash s'étale sur 24 semaines, soit approximativement 6 mois jusqu'au soft launch. Les phases s'enchaînent logiquement : les semaines 1-5 établissent les fondations techniques (authentification multi-méthodes, profil joueur, design system) et développent le slot machine, le cœur du gameplay. Les semaines 6-8 ajoutent la progression via la construction urbaine et le système d'inventaire. Les semaines 9-11 introduisent le PvP compétitif avec un système anti-triche robuste. Les semaines 12-14 développent le système d'amis, les guildes, et toute la couche sociale. Les semaines 15-16 ajoutent la collection de cartes et le trading entre amis. Les semaines 17-18 implémentent les ligues et la compétition. La semaine 19 équilibre l'économie et la monétisation. La semaine 20 ajoute les events et mécanismes de rétention. Les semaines 21-24 finalisent le polish (localisation i18n, accessibilité), la conformité légale (RGPD, CGU, politique de confidentialité), l'infrastructure (backups, monitoring, migrations DB sans downtime), le testing exhaustif, et préparent le lancement.
+Le développement complet de Kingdom Clash s'étale sur 24 semaines, soit approximativement 6 mois jusqu'au soft launch. Le jeu est développé en React Native + Expo pour un déploiement natif sur App Store et Google Play Store, avec un style visuel 2D illustré inspiré de Coin Master.
 
-Cette timeline est ambitieuse mais réalisable pour un développeur solo expérimenté travaillant temps plein. Chaque phase construit sur les précédentes, permettant de tester et d'itérer continuellement. Le résultat final est un jeu complet, polished, accessible, légalement conforme, et prêt pour le marché, avec toutes les features nécessaires pour compétitionner dans le segment très compétitif du mobile social gaming.
+Les phases s'enchaînent logiquement : les semaines 1-5 établissent les fondations techniques (React Native + Expo, authentification multi-méthodes, profil joueur, design system) et développent le slot machine, le cœur du gameplay. Les semaines 6-8 ajoutent la progression via la construction urbaine 2D (15-20 districts au lancement), le système de niveaux (niveau = districts complétés), et l'inventaire. Les semaines 9-11 introduisent le PvP compétitif avec un système anti-triche robuste (validation 100% serveur-side, connexion permanente requise). Les semaines 12-14 développent le système d'amis, les guildes avec chat modéré, et toute la couche sociale. Les semaines 15-16 ajoutent la collection de cartes et le trading entre amis. Les semaines 17-18 implémentent les ligues et la compétition. La semaine 19 équilibre l'économie et intègre les achats in-app natifs (IAP Apple/Google, pas de Stripe). La semaine 20 ajoute les events et mécanismes de rétention. Les semaines 21-24 finalisent le polish (localisation i18n, accessibilité), la conformité légale (RGPD, CGU, politique de confidentialité), l'infrastructure (backups, monitoring, migrations DB), le support client, le testing exhaustif, et préparent le lancement sur les stores.
+
+Cette timeline est ambitieuse mais réalisable. Chaque phase construit sur les précédentes, permettant de tester et d'itérer continuellement. Le résultat final est un jeu mobile natif complet, polished, accessible, légalement conforme, et prêt pour le marché, avec toutes les features nécessaires pour compétitionner dans le segment du mobile social gaming aux côtés de références comme Coin Master.
 
 ---
 
 **Document créé le :** Février 2026
-**Version :** 1.1
+**Version :** 2.0 (FINALE - VERSION VERROUILLÉE)
 **Auteur :** Équipe Kingdom Clash
-**Dernière mise à jour :** Février 2026 - Ajout authentification, profil joueur, système d'amis, inventaire, anti-triche, i18n, accessibilité, conformité légale, backup/recovery, versioning DB
+**Dernière mise à jour :** Février 2026
+
+**Changements v2.0 (décisions finales) :**
+- Stack : React Native + Expo (app native) remplace Next.js (web)
+- Visuels : 2D illustré style Coin Master remplace Three.js 3D
+- Niveaux : Niveau = nombre de districts complétés (pas d'XP)
+- Districts : 15-20 au lancement (ajouts en live ops)
+- Paiements : IAP natifs Apple/Google (pas de Stripe)
+- Connexion : Online obligatoire (sécurité prioritaire, pas de mode offline)
+- Modération : Filtre automatique + outils leader/co-leader + signalements
+- Support client : Tickets in-app + FAQ automatisée + SLA par catégorie
