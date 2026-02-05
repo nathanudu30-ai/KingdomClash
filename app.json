@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "Kingdom Clash",
+    "slug": "kingdom-clash",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "kingdomclash",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F172A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.kingdomclash.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0F172A"
+      },
+      "package": "com.kingdomclash.app"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
