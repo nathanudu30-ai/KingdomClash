@@ -18,6 +18,7 @@ export default function PlayScreen() {
   const [isSpinning, setIsSpinning] = useState(false);
   const [autoSpinRemaining, setAutoSpinRemaining] = useState(0);
   const [lastWin, setLastWin] = useState<string | null>(null);
+  const [betMultiplier, setBetMultiplier] = useState(1);
 
   // Use auth stats or default
   const playerStats = stats ?? {
@@ -52,7 +53,7 @@ export default function PlayScreen() {
     if (!currentResult) return;
 
     // Calculate reward
-    const reward = calculateReward(currentResult, 1, playerStats.attackMultiplier);
+    const reward = calculateReward(currentResult, betMultiplier, playerStats.attackMultiplier);
 
     if (reward) {
       // Haptic for win
@@ -83,7 +84,7 @@ export default function PlayScreen() {
       // Refresh stats from server
       await refreshStats();
     }
-  }, [currentResult, playerStats.attackMultiplier, refreshStats]);
+  }, [currentResult, betMultiplier, playerStats.attackMultiplier, refreshStats]);
 
   const startAutoSpin = useCallback(
     (count: number) => {
@@ -139,6 +140,24 @@ export default function PlayScreen() {
 
       {/* Spin Button */}
       <View style={styles.footer}>
+        <View style={styles.betSelector}>
+          <Text style={styles.betLabel}>Mise</Text>
+          <View style={styles.betOptions}>
+            {[1, 2, 5].map((multiplier) => {
+              const isSelected = betMultiplier === multiplier;
+              return (
+                <Button
+                  key={multiplier}
+                  title={`x${multiplier}`}
+                  onPress={() => setBetMultiplier(multiplier)}
+                  size="sm"
+                  variant={isSelected ? 'primary' : 'secondary'}
+                  style={styles.betButton}
+                />
+              );
+            })}
+          </View>
+        </View>
         <Button
           title={isSpinning ? 'SPINNING...' : 'SPIN'}
           onPress={handleSpin}
@@ -225,6 +244,22 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.lg,
     gap: spacing.sm,
+  },
+  betSelector: {
+    gap: spacing.xs,
+  },
+  betLabel: {
+    ...typography.captionBold,
+    color: colors.navy[200],
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  betOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  betButton: {
+    minWidth: 64,
   },
   noSpinsText: {
     ...typography.caption,
