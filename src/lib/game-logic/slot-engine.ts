@@ -81,6 +81,21 @@ export function spin(): SlotResult {
 }
 
 // Calculate rewards based on spin result
+type BetBonus = {
+  extraSpins: number;
+  rewardBoost: number;
+};
+
+const BET_BONUSES: Record<number, BetBonus> = {
+  1: { extraSpins: 0, rewardBoost: 0 },
+  2: { extraSpins: 3, rewardBoost: 0.2 },
+  5: { extraSpins: 10, rewardBoost: 0.33 },
+};
+
+function getBetBonus(betAmount: number): BetBonus {
+  return BET_BONUSES[betAmount] ?? BET_BONUSES[1];
+}
+
 export function calculateReward(
   result: SlotResult,
   betAmount: number,
@@ -91,10 +106,12 @@ export function calculateReward(
   }
 
   const baseAmount = betAmount * result.multiplier;
+  const betBonus = getBetBonus(betAmount);
+  const rewardMultiplier = 1 + betBonus.rewardBoost;
 
   switch (result.winType) {
     case 'coins':
-      return { type: 'coins', amount: baseAmount * 100 };
+      return { type: 'coins', amount: Math.round(baseAmount * 100 * rewardMultiplier) };
 
     case 'attack':
       return { type: 'attack', amount: Math.ceil(attackMultiplier) };
@@ -103,16 +120,19 @@ export function calculateReward(
       return { type: 'raid', amount: 1 };
 
     case 'shield':
-      return { type: 'shield', amount: result.multiplier };
+      return { type: 'shield', amount: Math.ceil(result.multiplier * rewardMultiplier) };
 
     case 'energy':
-      return { type: 'energy', amount: result.multiplier * 5 };
+      return {
+        type: 'energy',
+        amount: Math.ceil(result.multiplier * 5 * rewardMultiplier) + betBonus.extraSpins,
+      };
 
     case 'bonus':
-      return { type: 'bonus', amount: 1 };
+      return { type: 'bonus', amount: betBonus.extraSpins || 1 };
 
     case 'jackpot':
-      return { type: 'jackpot', amount: baseAmount * 1000 };
+      return { type: 'jackpot', amount: Math.round(baseAmount * 1000 * rewardMultiplier) };
 
     default:
       return null;
