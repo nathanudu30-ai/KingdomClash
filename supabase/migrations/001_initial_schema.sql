@@ -11,9 +11,8 @@ CREATE TABLE IF NOT EXISTS public.players (
     max_spins INTEGER DEFAULT 50 CHECK (max_spins > 0),
     shields INTEGER DEFAULT 0 CHECK (shields >= 0),
     
-    -- Progression
+    -- Progression (level = districts_completed, computed from player_stats)
     level INTEGER DEFAULT 1 CHECK (level > 0),
-    xp BIGINT DEFAULT 0 CHECK (xp >= 0),
     current_district INTEGER DEFAULT 1 CHECK (current_district > 0),
     
     -- Profile
