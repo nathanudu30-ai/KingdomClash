@@ -44,7 +44,7 @@ export function useFriends() {
     // Add to friends
     const newFriend: Friend = {
       id: `friend-${Date.now()}`,
-      odId: request.fromPlayerId,
+      playerId: request.fromPlayerId,
       username: request.fromUsername,
       avatarUrl: request.fromAvatarUrl,
       level: request.fromLevel,

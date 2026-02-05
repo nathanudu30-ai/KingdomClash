@@ -1,7 +1,7 @@
 // Friend types
 export interface Friend {
   id: string;
-  odId: string;
+  playerId: string;
   username: string;
   avatarUrl: string | null;
   level: number;
@@ -145,7 +145,7 @@ export function generateMockFriends(): Friend[] {
   const names = ['Alex', 'Jordan', 'Sam', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Quinn'];
   return names.slice(0, 5).map((name, i) => ({
     id: `friend-${i}`,
-    odId: `player-${i}`,
+    playerId: `player-${i}`,
     username: name + Math.floor(Math.random() * 100),
     avatarUrl: null,
     level: Math.floor(Math.random() * 15) + 1,
