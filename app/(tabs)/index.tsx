@@ -7,7 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { Button, Card, CoinDisplay } from '@/components/ui';
 import { SlotMachine } from '@/components/game';
-import { spin, calculateReward } from '@/lib/game-logic';
+import { spin, calculateReward, BET_OPTIONS } from '@/lib/game-logic';
 import { useAuth } from '@/lib/auth';
 import { getPlayerLevel } from '@/types/game';
 import type { SlotResult } from '@/types/game';
@@ -16,6 +16,7 @@ export default function PlayScreen() {
   const { player, stats, refreshStats } = useAuth();
   const [currentResult, setCurrentResult] = useState<SlotResult | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [autoSpinRemaining, setAutoSpinRemaining] = useState(0);
   const [lastWin, setLastWin] = useState<string | null>(null);
   const [autoSpinRemaining, setAutoSpinRemaining] = useState<number | null>(null);
   const [betOption, setBetOption] = useState<'x1' | 'x2' | 'x5'>('x1');
@@ -188,6 +189,24 @@ export default function PlayScreen() {
 
       {/* Spin Button */}
       <View style={styles.footer}>
+        <View style={styles.betSelector}>
+          <Text style={styles.betLabel}>Mise</Text>
+          <View style={styles.betOptions}>
+            {BET_OPTIONS.map((multiplier) => {
+              const isSelected = betMultiplier === multiplier;
+              return (
+                <Button
+                  key={multiplier}
+                  title={`x${multiplier}`}
+                  onPress={() => setBetMultiplier(multiplier)}
+                  size="sm"
+                  variant={isSelected ? 'primary' : 'secondary'}
+                  style={styles.betButton}
+                />
+              );
+            })}
+          </View>
+        </View>
         <Button
           title={isSpinning ? 'SPINNING...' : 'SPIN'}
           onPress={handleSpin}
