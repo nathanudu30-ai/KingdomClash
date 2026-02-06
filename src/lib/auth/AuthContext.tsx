@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { Player, PlayerStats } from '@/types/game';
 
 interface AuthContextType {
@@ -19,6 +19,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const previewPlayer: Player = {
+  id: 'preview-player',
+  username: 'Invité (Preview)',
+  avatarUrl: null,
+};
+
+const previewStats: PlayerStats = {
+  coins: 15000,
+  spins: 75,
+  shields: 2,
+  attackMultiplier: 1,
+  districtsCompleted: 3,
+  totalAttacks: 12,
+  totalRaids: 8,
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -30,6 +46,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Get initial session
+    if (!isSupabaseConfigured) {
+      setPlayer(previewPlayer);
+      setStats(previewStats);
+      setIsLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -100,12 +123,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
+    if (!isSupabaseConfigured) {
+      throw new Error("Connexion email indisponible en mode preview. Configure Supabase pour l'activer.");
+    }
+
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   };
 
   const signUpWithEmail = async (email: string, password: string, username: string) => {
+    if (!isSupabaseConfigured) {
+      throw new Error("Inscription indisponible en mode preview. Configure Supabase pour l'activer.");
+    }
+
     setIsLoading(true);
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
@@ -128,6 +159,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signInAsGuest = async () => {
+    if (!isSupabaseConfigured) {
+      setPlayer(previewPlayer);
+      setStats(previewStats);
+      setSession(null);
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     const { data, error } = await supabase.auth.signInAnonymously();
     if (error) throw error;
@@ -152,12 +192,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
+
+    setSession(null);
+    setUser(null);
     setPlayer(null);
     setStats(null);
   };
 
   const refreshStats = async () => {
+    if (!isSupabaseConfigured) return;
+
     if (user) {
       await loadPlayerData(user.id);
     }

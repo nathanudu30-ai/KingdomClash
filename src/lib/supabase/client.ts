@@ -6,22 +6,21 @@ import type { Database } from '@/types/database';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 const supabaseLegacyKey = process.env.EXPO_PUBLIC_SUPABASE_KEY;
+const fallbackSupabaseUrl = 'https://offline-preview.supabase.co';
+const fallbackSupabaseKey = 'offline-preview-anon-key';
 
-if (!supabaseUrl) {
-  throw new Error('EXPO_PUBLIC_SUPABASE_URL is required to initialize Supabase.');
+export const isSupabaseConfigured = Boolean(supabaseUrl && (supabaseAnonKey || supabaseLegacyKey));
+
+if (!isSupabaseConfigured) {
+  console.warn(
+    'Supabase is not configured. Running in offline preview mode (guest only). Set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to enable full auth.'
+  );
 }
 
-if (!supabaseAnonKey) {
-  if (supabaseLegacyKey) {
-    throw new Error(
-      'EXPO_PUBLIC_SUPABASE_ANON_KEY is required. Rename EXPO_PUBLIC_SUPABASE_KEY to EXPO_PUBLIC_SUPABASE_ANON_KEY.'
-    );
-  }
+const resolvedSupabaseUrl = supabaseUrl ?? fallbackSupabaseUrl;
+const resolvedSupabaseKey = supabaseAnonKey ?? supabaseLegacyKey ?? fallbackSupabaseKey;
 
-  throw new Error('EXPO_PUBLIC_SUPABASE_ANON_KEY is required to initialize Supabase.');
-}
-
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(resolvedSupabaseUrl, resolvedSupabaseKey, {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,
