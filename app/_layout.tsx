@@ -11,7 +11,7 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 SplashScreen.preventAutoHideAsync();
 
 function RootLayoutNav() {
-  const { user, isLoading } = useAuth();
+  const { user, player, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
@@ -20,14 +20,16 @@ function RootLayoutNav() {
 
     const inAuthGroup = segments[0] === '(auth)';
 
-    if (!user && !inAuthGroup) {
+    const hasAccess = Boolean(user || player);
+
+    if (!hasAccess && !inAuthGroup) {
       // Redirect to login if not authenticated
       router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
+    } else if (hasAccess && inAuthGroup) {
       // Redirect to home if authenticated
       router.replace('/(tabs)');
     }
-  }, [user, isLoading, segments]);
+  }, [user, player, isLoading, segments]);
 
   useEffect(() => {
     if (!isLoading) {
