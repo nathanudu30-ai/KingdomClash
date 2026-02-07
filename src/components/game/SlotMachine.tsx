@@ -82,7 +82,7 @@ export function SlotMachine({ result, isSpinning, onSpinComplete }: SlotMachineP
   return (
     <View style={styles.machineWrapper}>
       <View style={styles.machineHeader}>
-        <Text style={styles.machineHeaderText}>TABLE ROYALE</Text>
+        <Text style={styles.machineHeaderText}>SALLE AU TRÉSOR</Text>
       </View>
 
       <View style={styles.board}>
@@ -103,7 +103,7 @@ export function SlotMachine({ result, isSpinning, onSpinComplete }: SlotMachineP
 
       {result?.isWin && !isSpinning && (
         <View style={styles.winIndicator}>
-          <Text style={styles.winIndicatorText}>{result.multiplier >= 3 ? '🏆 JACKPOT' : '✨ WIN'}</Text>
+          <Text style={styles.winIndicatorText}>{result.multiplier >= 3 ? '👑 JACKPOT' : '✨ GAIN'}</Text>
         </View>
       )}
     </View>
@@ -115,32 +115,32 @@ const styles = StyleSheet.create({
     width: '100%',
     borderRadius: borderRadius.lg,
     borderWidth: 2,
-    borderColor: '#B88A2A',
-    backgroundColor: '#3D140F',
+    borderColor: '#E7B34E',
+    backgroundColor: '#2D130D',
     padding: spacing.sm,
     gap: spacing.sm,
-    shadowColor: '#FFD87A',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowColor: '#FFC45F',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    elevation: 10,
   },
   machineHeader: {
     borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: '#D8AF4A',
-    backgroundColor: '#5E1E14',
+    borderColor: '#F4CB72',
+    backgroundColor: '#5E2815',
     paddingVertical: spacing.xs,
     alignItems: 'center',
   },
   machineHeaderText: {
-    color: '#F8E39B',
+    color: '#FFE8A8',
     fontSize: 12,
-    fontWeight: '800',
-    letterSpacing: 1,
+    fontWeight: '900',
+    letterSpacing: 1.2,
   },
   board: {
-    gap: 6,
+    gap: 8,
   },
   reelsRow: {
     flexDirection: 'row',
@@ -149,13 +149,18 @@ const styles = StyleSheet.create({
   cell: {
     width: REEL_SIZE,
     height: REEL_SIZE,
-    backgroundColor: '#5B1F16',
+    backgroundColor: '#4A2216',
     borderRadius: borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#D4A437',
+    borderColor: '#E6B552',
     gap: 2,
+    shadowColor: '#FFBC54',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 3,
   },
   symbol: {
     textAlign: 'center',
@@ -163,20 +168,20 @@ const styles = StyleSheet.create({
   symbolName: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#EACB86',
+    color: '#F3D08A',
     textTransform: 'uppercase',
   },
   winIndicator: {
-    backgroundColor: '#FFCB47',
+    backgroundColor: '#F8C548',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
     alignSelf: 'center',
     borderWidth: 1,
-    borderColor: '#7A3E00',
+    borderColor: '#8C4A05',
   },
   winIndicatorText: {
-    color: '#6B210A',
+    color: '#612207',
     fontWeight: '900',
     fontSize: 16,
   },
