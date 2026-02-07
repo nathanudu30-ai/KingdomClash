@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
 import { Text, StyleSheet, View } from 'react-native';
-import { colors } from '@/theme/colors';
 
 interface TabIconProps {
   emoji: string;
@@ -21,8 +20,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: colors.primary[400],
-        tabBarInactiveTintColor: colors.navy[400],
+        tabBarActiveTintColor: '#F2D58C',
+        tabBarInactiveTintColor: '#B5945D',
         tabBarLabelStyle: styles.tabLabel,
       }}
     >
@@ -57,7 +56,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="cards"
         options={{
-          href: null, // Hidden from tab bar, accessible via profile
+          href: null,
         }}
       />
       <Tabs.Screen
@@ -73,27 +72,31 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.navy[800],
-    borderTopColor: colors.navy[700],
-    borderTopWidth: 1,
-    height: 80,
-    paddingBottom: 20,
+    backgroundColor: '#2A1911',
+    borderTopColor: '#835A2A',
+    borderTopWidth: 2,
+    height: 84,
+    paddingBottom: 16,
     paddingTop: 8,
   },
   tabLabel: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 12,
+    fontWeight: '700',
   },
   iconContainer: {
-    padding: 4,
-    borderRadius: 8,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   iconFocused: {
-    backgroundColor: colors.primary[500] + '20',
+    backgroundColor: '#3A2418',
+    borderColor: '#D5A645',
   },
   emoji: {
-    fontSize: 24,
-    opacity: 0.6,
+    fontSize: 22,
+    opacity: 0.75,
   },
   emojiFocused: {
     opacity: 1,

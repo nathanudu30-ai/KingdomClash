@@ -10,7 +10,6 @@ import Animated, {
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
-import { colors } from '@/theme/colors';
 import { spacing, borderRadius } from '@/theme/spacing';
 import { getSymbolInfo } from '@/lib/game-logic';
 import type { SlotResult, SlotSymbol } from '@/types/game';
@@ -38,17 +37,14 @@ function Reel({ symbol, isSpinning, delay, onComplete }: ReelProps) {
 
   useEffect(() => {
     if (isSpinning) {
-      // Spin animation
       rotation.value = withDelay(
         delay,
         withSequence(
-          // Fast spin
-          withTiming(360 * 5, {
-            duration: 1500 + delay,
+          withTiming(360 * 4, {
+            duration: 1300 + delay,
             easing: Easing.inOut(Easing.cubic),
           }),
-          // Bounce back slightly
-          withSpring(360 * 5, { damping: 15 }, (finished) => {
+          withSpring(360 * 4, { damping: 14 }, (finished) => {
             if (finished && onComplete) {
               runOnJS(onComplete)();
             }
@@ -56,13 +52,9 @@ function Reel({ symbol, isSpinning, delay, onComplete }: ReelProps) {
         )
       );
 
-      // Scale pop when landing
       scale.value = withDelay(
-        delay + 1500,
-        withSequence(
-          withSpring(1.1, { damping: 10 }),
-          withTiming(1, { duration: 150 })
-        )
+        delay + 1300,
+        withSequence(withSpring(1.08, { damping: 11 }), withTiming(1, { duration: 140 }))
       );
     } else {
       rotation.value = 0;
@@ -71,54 +63,47 @@ function Reel({ symbol, isSpinning, delay, onComplete }: ReelProps) {
   }, [isSpinning, delay]);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { rotateX: `${rotation.value}deg` },
-      { scale: scale.value },
-    ],
+    transform: [{ rotateX: `${rotation.value}deg` }, { scale: scale.value }],
   }));
 
-  const { emoji, color, name } = getSymbolInfo(symbol);
+  const { emoji, name } = getSymbolInfo(symbol);
 
   return (
-    <View style={styles.reelContainer}>
-      <Animated.View style={[styles.reel, animatedStyle]}>
-        <Text style={[styles.symbol, { fontSize: SYMBOL_SIZE * 0.6 }]}>
-          {emoji}
-        </Text>
-      </Animated.View>
-      <Text style={[styles.symbolName, { color }]}>{name}</Text>
-    </View>
+    <Animated.View style={[styles.cell, animatedStyle]}>
+      <Text style={[styles.symbol, { fontSize: SYMBOL_SIZE * 0.52 }]}>{emoji}</Text>
+      <Text style={styles.symbolName}>{name}</Text>
+    </Animated.View>
   );
 }
 
 export function SlotMachine({ result, isSpinning, onSpinComplete }: SlotMachineProps) {
-  // Default symbols when no result
-  const symbols: [SlotSymbol, SlotSymbol, SlotSymbol] = result?.symbols ?? [
-    'coin',
-    'attack',
-    'raid',
-  ];
+  const symbols: [SlotSymbol, SlotSymbol, SlotSymbol] = result?.symbols ?? ['coin', 'attack', 'raid'];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.reelsRow}>
-        {symbols.map((symbol, index) => (
-          <Reel
-            key={index}
-            symbol={symbol}
-            isSpinning={isSpinning}
-            delay={index * 200}
-            onComplete={index === 2 ? onSpinComplete : undefined}
-          />
+    <View style={styles.machineWrapper}>
+      <View style={styles.machineHeader}>
+        <Text style={styles.machineHeaderText}>TABLE ROYALE</Text>
+      </View>
+
+      <View style={styles.board}>
+        {[0, 1, 2].map((rowIndex) => (
+          <View key={rowIndex} style={styles.reelsRow}>
+            {symbols.map((symbol, colIndex) => (
+              <Reel
+                key={`${rowIndex}-${colIndex}`}
+                symbol={symbol}
+                isSpinning={isSpinning}
+                delay={colIndex * 200}
+                onComplete={rowIndex === 2 && colIndex === 2 ? onSpinComplete : undefined}
+              />
+            ))}
+          </View>
         ))}
       </View>
 
-      {/* Win indicator */}
       {result?.isWin && !isSpinning && (
         <View style={styles.winIndicator}>
-          <Text style={styles.winIndicatorText}>
-            {result.multiplier >= 3 ? '🎉 JACKPOT! 🎉' : '✨ WIN! ✨'}
-          </Text>
+          <Text style={styles.winIndicatorText}>{result.multiplier >= 3 ? '🏆 JACKPOT' : '✨ WIN'}</Text>
         </View>
       )}
     </View>
@@ -126,44 +111,73 @@ export function SlotMachine({ result, isSpinning, onSpinComplete }: SlotMachineP
 }
 
 const styles = StyleSheet.create({
-  container: {
+  machineWrapper: {
+    width: '100%',
+    borderRadius: borderRadius.lg,
+    borderWidth: 2,
+    borderColor: '#B88A2A',
+    backgroundColor: '#3D140F',
+    padding: spacing.sm,
+    gap: spacing.sm,
+    shadowColor: '#FFD87A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  machineHeader: {
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: '#D8AF4A',
+    backgroundColor: '#5E1E14',
+    paddingVertical: spacing.xs,
     alignItems: 'center',
-    gap: spacing.md,
+  },
+  machineHeaderText: {
+    color: '#F8E39B',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  board: {
+    gap: 6,
   },
   reelsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  reelContainer: {
-    alignItems: 'center',
     gap: spacing.xs,
   },
-  reel: {
+  cell: {
     width: REEL_SIZE,
     height: REEL_SIZE,
-    backgroundColor: colors.navy[700],
-    borderRadius: borderRadius.lg,
+    backgroundColor: '#5B1F16',
+    borderRadius: borderRadius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.navy[500],
+    borderWidth: 1,
+    borderColor: '#D4A437',
+    gap: 2,
   },
   symbol: {
     textAlign: 'center',
   },
   symbolName: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#EACB86',
+    textTransform: 'uppercase',
   },
   winIndicator: {
-    backgroundColor: colors.accent[500],
+    backgroundColor: '#FFCB47',
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     borderRadius: borderRadius.md,
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#7A3E00',
   },
   winIndicatorText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: 18,
+    color: '#6B210A',
+    fontWeight: '900',
+    fontSize: 16,
   },
 });

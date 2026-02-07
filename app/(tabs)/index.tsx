@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
-import { Button, Card, CoinDisplay } from '@/components/ui';
+import { CoinDisplay } from '@/components/ui';
 import { SlotMachine } from '@/components/game';
 import { spin, calculateReward } from '@/lib/game-logic';
 import { useAuth } from '@/lib/auth';
@@ -20,7 +19,6 @@ export default function PlayScreen() {
   const [lastWin, setLastWin] = useState<string | null>(null);
   const [betOption, setBetOption] = useState<'x1' | 'x2' | 'x5'>('x1');
 
-  // Use auth stats or default
   const playerStats = stats ?? {
     coins: 10000,
     spins: 50,
@@ -45,12 +43,9 @@ export default function PlayScreen() {
 
     setIsSpinning(true);
     setLastWin(null);
-
-    // Generate result
     const result = spin();
     setCurrentResult(result);
 
-    // Haptic feedback
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   }, [playerStats.spins, isSpinning, activeBet.spinCost]);
 
@@ -59,44 +54,34 @@ export default function PlayScreen() {
 
     if (!currentResult) return;
 
-    // Calculate reward
-    const effectiveBet = Math.max(
-      1,
-      Math.round(activeBet.betAmount * activeBet.bonusMultiplier)
-    );
-    const reward = calculateReward(
-      currentResult,
-      effectiveBet,
-      playerStats.attackMultiplier
-    );
+    const effectiveBet = Math.max(1, Math.round(activeBet.betAmount * activeBet.bonusMultiplier));
+    const reward = calculateReward(currentResult, effectiveBet, playerStats.attackMultiplier);
 
     if (reward) {
-      // Haptic for win
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       switch (reward.type) {
         case 'coins':
         case 'jackpot':
-          setLastWin(`+${reward.amount.toLocaleString()} coins!`);
+          setLastWin(`+${reward.amount.toLocaleString()} pièces`);
           break;
         case 'shield':
-          setLastWin(`+${reward.amount} bouclier${reward.amount > 1 ? 's' : ''}!`);
+          setLastWin(`+${reward.amount} bouclier${reward.amount > 1 ? 's' : ''}`);
           break;
         case 'energy':
-          setLastWin(`+${reward.amount} spins!`);
+          setLastWin(`+${reward.amount} spins`);
           break;
         case 'attack':
-          setLastWin('Attaque prête!');
+          setLastWin('Attaque prête');
           break;
         case 'raid':
-          setLastWin('Raid prêt!');
+          setLastWin('Raid prêt');
           break;
         case 'bonus':
-          setLastWin('BONUS!');
+          setLastWin('BONUS');
           break;
       }
 
-      // Refresh stats from server
       await refreshStats();
     }
 
@@ -145,223 +130,266 @@ export default function PlayScreen() {
   }, [autoSpinRemaining, isSpinning, playerStats.spins, handleSpin]);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.levelBadge}>
-          <Text style={styles.levelText}>Niv. {level}</Text>
-        </View>
-        <Text style={styles.title}>Kingdom Clash</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      {/* Stats Row */}
-      <View style={styles.statsRow}>
-        <CoinDisplay amount={playerStats.coins} size="lg" />
-        <View style={styles.resourceItem}>
-          <Text style={styles.resourceEmoji}>⚡</Text>
-          <Text style={styles.resourceValue}>{playerStats.spins}</Text>
-        </View>
-        <View style={styles.resourceItem}>
-          <Text style={styles.resourceEmoji}>🛡️</Text>
-          <Text style={styles.resourceValue}>{playerStats.shields}</Text>
-        </View>
-      </View>
-
-      {/* Slot Machine */}
-      <View style={styles.slotContainer}>
-        <Card variant="elevated" padding="lg">
-          <SlotMachine
-            result={currentResult}
-            isSpinning={isSpinning}
-            onSpinComplete={handleSpinComplete}
-          />
-        </Card>
-
-        {/* Win display */}
-        {lastWin && (
-          <View style={styles.winContainer}>
-            <Text style={styles.winText}>{lastWin}</Text>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.overlay}>
+          <View style={styles.header}>
+            <View style={styles.levelBadge}>
+              <Text style={styles.levelText}>Niv. {level}</Text>
+            </View>
+            <Text style={styles.title}>Kingdom Clash</Text>
+            <Text style={styles.playerName}>{player?.username ?? 'Invité'}</Text>
           </View>
-        )}
-      </View>
 
-      {/* Spin Button */}
-      <View style={styles.footer}>
-        <Button
-          title={isSpinning ? 'SPINNING...' : 'SPIN'}
-          onPress={handleSpin}
-          size="lg"
-          fullWidth
-          disabled={playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning}
-          loading={isSpinning}
-        />
-
-        <View style={styles.betSection}>
-          <Text style={styles.betLabel}>Mise</Text>
-          <View style={styles.betRow}>
-            {(['x1', 'x2', 'x5'] as const).map((option) => {
-              const optionConfig = betConfigs[option];
-              const isActive = option === betOption;
-              return (
-                <Button
-                  key={option}
-                  title={`${optionConfig.label} (${optionConfig.spinCost})`}
-                  onPress={() => setBetOption(option)}
-                  variant={isActive ? 'primary' : 'secondary'}
-                  size="sm"
-                />
-              );
-            })}
+          <View style={styles.statsRow}>
+            <CoinDisplay amount={playerStats.coins} size="lg" />
+            <View style={styles.resourceItem}>
+              <Text style={styles.resourceEmoji}>⚡</Text>
+              <Text style={styles.resourceValue}>{playerStats.spins}</Text>
+            </View>
+            <View style={styles.resourceItem}>
+              <Text style={styles.resourceEmoji}>🛡️</Text>
+              <Text style={styles.resourceValue}>{playerStats.shields}</Text>
+            </View>
           </View>
-          <Text style={styles.betHelper}>
-            Bonus: {activeBet.bonusMultiplier === 1 ? '0%' : `${Math.round((activeBet.bonusMultiplier - 1) * 100)}%`}
-          </Text>
-        </View>
 
-        <View style={styles.autoSpinSection}>
-          <Text style={styles.autoSpinLabel}>Auto-spin</Text>
-          <View style={styles.autoSpinRow}>
-            {isAutoSpinning ? (
-              <Button
-                title={`Stop (${autoSpinRemaining})`}
-                onPress={stopAutoSpin}
-                variant="secondary"
-                size="sm"
-                fullWidth
-              />
-            ) : (
-              <>
-                <Button
-                  title="10"
-                  onPress={() => startAutoSpin(10)}
-                  variant="secondary"
-                  size="sm"
-                />
-                <Button
-                  title="50"
-                  onPress={() => startAutoSpin(50)}
-                  variant="secondary"
-                  size="sm"
-                />
-                <Button
-                  title="100"
-                  onPress={() => startAutoSpin(100)}
-                  variant="secondary"
-                  size="sm"
-                />
-              </>
+          <View style={styles.slotContainer}>
+            <View style={styles.slotFrame}>
+              <SlotMachine result={currentResult} isSpinning={isSpinning} onSpinComplete={handleSpinComplete} />
+            </View>
+
+            {lastWin && (
+              <View style={styles.winContainer}>
+                <Text style={styles.winText}>{lastWin}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.footer}>
+            <View style={styles.betRow}>
+              {(['x1', 'x2', 'x5'] as const).map((option) => {
+                const optionConfig = betConfigs[option];
+                const isActive = option === betOption;
+                return (
+                  <Pressable
+                    key={option}
+                    onPress={() => setBetOption(option)}
+                    style={[styles.optionButton, isActive && styles.optionButtonActive]}
+                  >
+                    <Text style={[styles.optionButtonText, isActive && styles.optionButtonTextActive]}>
+                      {optionConfig.label} ({optionConfig.spinCost})
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+
+            <Pressable
+              onPress={handleSpin}
+              disabled={playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning}
+              style={[styles.spinButton, (playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning) && styles.spinButtonDisabled]}
+            >
+              <Text style={styles.spinButtonText}>{isSpinning ? 'SPINNING...' : 'SPIN'}</Text>
+            </Pressable>
+
+            <View style={styles.autoSpinPanel}>
+              <Text style={styles.autoSpinLabel}>Auto-spin</Text>
+              <View style={styles.autoSpinRow}>
+                {isAutoSpinning ? (
+                  <Pressable onPress={stopAutoSpin} style={styles.autoButton}>
+                    <Text style={styles.autoButtonText}>Stop ({autoSpinRemaining})</Text>
+                  </Pressable>
+                ) : (
+                  [10, 50, 100].map((count) => (
+                    <Pressable key={count} onPress={() => startAutoSpin(count)} style={styles.autoButton}>
+                      <Text style={styles.autoButtonText}>{count}</Text>
+                    </Pressable>
+                  ))
+                )}
+              </View>
+            </View>
+
+            {playerStats.spins < activeBet.spinCost && (
+              <Text style={styles.noSpinsText}>Plus de spins ! Attendez le rechargement.</Text>
             )}
           </View>
         </View>
-
-        {playerStats.spins < activeBet.spinCost && (
-          <Text style={styles.noSpinsText}>
-            Plus de spins! Attendez le rechargement.
-          </Text>
-        )}
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.navy[900],
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(20, 9, 6, 0.70)',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
   },
   header: {
+    marginTop: spacing.xs,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#8B6226',
+    borderRadius: 16,
     paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: 'rgba(61, 25, 14, 0.88)',
   },
   levelBadge: {
-    backgroundColor: colors.primary[500],
+    backgroundColor: '#B88A2A',
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: 999,
   },
   levelText: {
     ...typography.captionBold,
-    color: colors.white,
+    color: '#34170E',
   },
   title: {
     ...typography.h2,
-    color: colors.white,
+    color: '#F7DF9D',
+    letterSpacing: 0.6,
   },
-  placeholder: {
-    width: 50,
+  playerName: {
+    ...typography.caption,
+    color: '#F8E7BA',
+    maxWidth: 72,
+    textAlign: 'right',
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.navy[800],
-    marginHorizontal: spacing.lg,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#8D6427',
+    backgroundColor: 'rgba(40, 18, 10, 0.88)',
   },
   resourceItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
+    backgroundColor: '#4A1E15',
+    borderWidth: 1,
+    borderColor: '#AA7A2D',
+    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   resourceEmoji: {
-    fontSize: 20,
+    fontSize: 18,
   },
   resourceValue: {
     ...typography.bodyBold,
-    color: colors.white,
+    color: '#F6DC95',
   },
   slotContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
+  },
+  slotFrame: {
+    borderRadius: 28,
+    borderWidth: 2,
+    borderColor: '#DAAB43',
+    backgroundColor: 'rgba(77, 28, 17, 0.94)',
+    padding: spacing.sm,
+    shadowColor: '#FFCB66',
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 14,
+    elevation: 10,
   },
   winContainer: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     alignItems: 'center',
   },
   winText: {
-    ...typography.h2,
-    color: colors.accent[400],
+    ...typography.h3,
+    color: '#FFD774',
+    textTransform: 'uppercase',
   },
   footer: {
-    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#8D6324',
+    borderRadius: 20,
+    padding: spacing.md,
+    backgroundColor: 'rgba(39, 16, 10, 0.9)',
     gap: spacing.sm,
-  },
-  betSection: {
-    gap: spacing.xs,
-  },
-  betLabel: {
-    ...typography.caption,
-    color: colors.navy[400],
   },
   betRow: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  betHelper: {
-    ...typography.caption,
-    color: colors.navy[500],
+  optionButton: {
+    flex: 1,
+    paddingVertical: spacing.xs,
+    alignItems: 'center',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#7E5930',
+    backgroundColor: '#3A2118',
   },
-  autoSpinSection: {
+  optionButtonActive: {
+    backgroundColor: '#D4A945',
+    borderColor: '#F3CB76',
+  },
+  optionButtonText: {
+    ...typography.captionBold,
+    color: '#E1C486',
+  },
+  optionButtonTextActive: {
+    color: '#46210F',
+  },
+  spinButton: {
+    borderRadius: 16,
+    backgroundColor: '#15609B',
+    borderWidth: 2,
+    borderColor: '#6FB4EC',
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+  },
+  spinButtonDisabled: {
+    opacity: 0.55,
+  },
+  spinButtonText: {
+    ...typography.h2,
+    color: '#F8FBFF',
+    letterSpacing: 1,
+  },
+  autoSpinPanel: {
     gap: spacing.xs,
   },
   autoSpinLabel: {
     ...typography.caption,
-    color: colors.navy[400],
+    color: '#D9BD86',
   },
   autoSpinRow: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
+  autoButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#8B6327',
+    borderRadius: 10,
+    paddingVertical: spacing.xs,
+    alignItems: 'center',
+    backgroundColor: '#4A2818',
+  },
+  autoButtonText: {
+    ...typography.captionBold,
+    color: '#F3D796',
+  },
   noSpinsText: {
     ...typography.caption,
-    color: colors.navy[400],
+    color: '#DE956E',
     textAlign: 'center',
   },
 });
