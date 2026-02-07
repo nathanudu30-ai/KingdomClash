@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,6 +10,7 @@ import Animated, {
 import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
+import { localAssetRequires } from '@/config/localAssets';
 
 interface CoinDisplayProps {
   amount: number;
@@ -49,16 +50,16 @@ export function CoinDisplay({ amount, size = 'md', animated = true }: CoinDispla
   }));
 
   const sizeStyles = {
-    sm: { emoji: 16, text: typography.caption },
-    md: { emoji: 20, text: typography.body },
-    lg: { emoji: 28, text: typography.h2 },
+    sm: { icon: 16, text: typography.caption },
+    md: { icon: 20, text: typography.body },
+    lg: { icon: 28, text: typography.h2 },
   };
 
-  const { emoji: emojiSize, text: textStyle } = sizeStyles[size];
+  const { icon: iconSize, text: textStyle } = sizeStyles[size];
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      <Text style={[styles.emoji, { fontSize: emojiSize }]}>🪙</Text>
+      <Image source={localAssetRequires.tokens.token01} style={[styles.icon, { width: iconSize, height: iconSize }]} resizeMode="contain" />
       <Text style={[styles.amount, textStyle]}>{formatNumber(amount)}</Text>
     </Animated.View>
   );
@@ -70,9 +71,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  emoji: {
-    lineHeight: 24,
-  },
+  icon: {},
   amount: {
     color: colors.accent[400],
     fontWeight: '700',

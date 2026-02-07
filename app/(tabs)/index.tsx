@@ -19,10 +19,7 @@ export default function PlayScreen() {
   const [autoSpinRemaining, setAutoSpinRemaining] = useState<number | null>(null);
   const [lastWin, setLastWin] = useState<string | null>(null);
   const [betOption, setBetOption] = useState<'x1' | 'x2' | 'x5'>('x1');
-  const backgroundOptions = slotDecor.backgrounds;
-  const [selectedBackground] = useState(() =>
-    backgroundOptions[Math.floor(Math.random() * backgroundOptions.length)]
-  );
+  const [selectedBackground] = useState(() => slotDecor.getWeeklyBackground());
 
   const playerStats = stats ?? {
     coins: 10000,
@@ -136,7 +133,7 @@ export default function PlayScreen() {
 
   return (
       <ImageBackground
-        source={{ uri: selectedBackground }}
+        source={selectedBackground}
         style={styles.container}
         resizeMode="cover"
       >
@@ -163,7 +160,7 @@ export default function PlayScreen() {
           </View>
 
           <View style={styles.slotContainer}>
-            <Image source={{ uri: slotDecor.machineFrame }} style={styles.machineDecor} resizeMode="contain" />
+            <Image source={slotDecor.machineFrame} style={styles.machineDecor} resizeMode="contain" />
             <View style={styles.slotFrame}>
               <SlotMachine result={currentResult} isSpinning={isSpinning} onSpinComplete={handleSpinComplete} />
             </View>
@@ -199,7 +196,6 @@ export default function PlayScreen() {
               disabled={playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning}
               style={[styles.spinButton, (playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning) && styles.spinButtonDisabled]}
             >
-              <Image source={{ uri: slotDecor.spinButton }} style={styles.spinButtonDecor} resizeMode="stretch" />
               <Text style={styles.spinButtonText}>{isSpinning ? 'SPINNING...' : 'SPIN'}</Text>
             </Pressable>
 
@@ -382,12 +378,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  spinButtonDecor: {
-    ...StyleSheet.absoluteFillObject,
-    width: undefined,
-    height: undefined,
-    opacity: 0.85,
   },
   spinButtonDisabled: {
     opacity: 0.55,
