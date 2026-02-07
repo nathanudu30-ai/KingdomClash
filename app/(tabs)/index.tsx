@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image, ImageBackground } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { spacing } from '@/theme/spacing';
@@ -7,6 +7,7 @@ import { typography } from '@/theme/typography';
 import { CoinDisplay } from '@/components/ui';
 import { SlotMachine } from '@/components/game';
 import { spin, calculateReward } from '@/lib/game-logic';
+import { slotDecor } from '@/config/slotDecor';
 import { useAuth } from '@/lib/auth';
 import { getPlayerLevel } from '@/types/game';
 import type { SlotResult } from '@/types/game';
@@ -18,6 +19,10 @@ export default function PlayScreen() {
   const [autoSpinRemaining, setAutoSpinRemaining] = useState<number | null>(null);
   const [lastWin, setLastWin] = useState<string | null>(null);
   const [betOption, setBetOption] = useState<'x1' | 'x2' | 'x5'>('x1');
+  const backgroundOptions = slotDecor.backgrounds;
+  const [selectedBackground] = useState(() =>
+    backgroundOptions[Math.floor(Math.random() * backgroundOptions.length)]
+  );
 
   const playerStats = stats ?? {
     coins: 10000,
@@ -130,7 +135,12 @@ export default function PlayScreen() {
   }, [autoSpinRemaining, isSpinning, playerStats.spins, handleSpin]);
 
   return (
-      <SafeAreaView style={styles.container} edges={['top']}>
+      <ImageBackground
+        source={{ uri: selectedBackground }}
+        style={styles.container}
+        resizeMode="cover"
+      >
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
         <View style={styles.overlay}>
           <View style={styles.header}>
             <View style={styles.levelBadge}>
@@ -153,6 +163,7 @@ export default function PlayScreen() {
           </View>
 
           <View style={styles.slotContainer}>
+            <Image source={{ uri: slotDecor.machineFrame }} style={styles.machineDecor} resizeMode="contain" />
             <View style={styles.slotFrame}>
               <SlotMachine result={currentResult} isSpinning={isSpinning} onSpinComplete={handleSpinComplete} />
             </View>
@@ -188,6 +199,7 @@ export default function PlayScreen() {
               disabled={playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning}
               style={[styles.spinButton, (playerStats.spins < activeBet.spinCost || isSpinning || isAutoSpinning) && styles.spinButtonDisabled]}
             >
+              <Image source={{ uri: slotDecor.spinButton }} style={styles.spinButtonDecor} resizeMode="stretch" />
               <Text style={styles.spinButtonText}>{isSpinning ? 'SPINNING...' : 'SPIN'}</Text>
             </Pressable>
 
@@ -214,11 +226,16 @@ export default function PlayScreen() {
           </View>
         </View>
       </SafeAreaView>
+      </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#23140E',
+  },
+  safeArea: {
     flex: 1,
   },
   overlay: {
@@ -293,8 +310,17 @@ const styles = StyleSheet.create({
   slotContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  machineDecor: {
+    width: '100%',
+    maxWidth: 540,
+    height: 190,
+    marginBottom: -152,
+    opacity: 0.95,
   },
   slotFrame: {
+    width: '100%',
     borderRadius: 28,
     borderWidth: 2,
     borderColor: '#DAAB43',
@@ -348,12 +374,20 @@ const styles = StyleSheet.create({
     color: '#46210F',
   },
   spinButton: {
+    overflow: 'hidden',
     borderRadius: 16,
     backgroundColor: '#15609B',
     borderWidth: 2,
     borderColor: '#6FB4EC',
     paddingVertical: spacing.md,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinButtonDecor: {
+    ...StyleSheet.absoluteFillObject,
+    width: undefined,
+    height: undefined,
+    opacity: 0.85,
   },
   spinButtonDisabled: {
     opacity: 0.55,
