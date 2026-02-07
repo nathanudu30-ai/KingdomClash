@@ -5,7 +5,7 @@ Ce dossier centralise les médias locaux du jeu pour simplifier les imports Reac
 ## Structure
 
 - `backgrounds/` : fonds d'écran (home, écran slot, etc.)
-- `slot-machine/` : éléments de la machine à sous (frame, levier, bouton spin, décor)
+- `machine/` : éléments de la machine (frame, levier, bouton spin, décor)
 - `tokens/` : jetons/monnaies (bronze, argent, or, premium)
 
 ## Convention de nommage

@@ -4,10 +4,10 @@ export const localAssetPaths = {
     slotIndustrial: 'assets/backgrounds/bg-slot-industrial.webp',
     villageDawn: 'assets/backgrounds/bg-village-dawn.webp',
   },
-  slotMachine: {
-    frameNeon: 'assets/slot-machine/machine-frame-neon.webp',
-    spinButtonGradient: 'assets/slot-machine/spin-button-gradient.webp',
-    sideLight: 'assets/slot-machine/machine-side-light.webp',
+  machine: {
+    frameNeon: 'assets/machine/machine-frame-neon.webp',
+    spinButtonGradient: 'assets/machine/spin-button-gradient.webp',
+    sideLight: 'assets/machine/machine-side-light.webp',
   },
   tokens: {
     bronze: 'assets/tokens/token-bronze.webp',
